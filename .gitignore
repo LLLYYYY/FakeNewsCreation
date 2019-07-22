@@ -1,0 +1,8 @@
+# Don't track content of these folders
+__pycache__/
+
+
+# ignore hidden files
+.*
+!.gitignore
+
