@@ -135,72 +135,75 @@ def movePoints(defenderHyperplane: HyperPlane, adversaryHyperplane:HyperPlane, i
     #     raise ValueError("Crash at movedPointList")
     #     ##########################Haven't implemented!!!!!!!!!!!!!!!!!!
 
-    if adversaryHyperplane.maximumPointNumber == adversaryHyperplane.upperPointNumber + \
-            adversaryHyperplane.onLinePointNumber: # Upper has more
-        for point in movedDefenderPointsList:
 
-            n = 0
-            dimension = len(point)
-            b = 0 # Use for calculating point to hyperplane distance.
-            for i in range(dimension):
-                n += point[i] * adversaryHyperplane.hyperPlaneEquation[i]
-                b += adversaryHyperplane.hyperPlaneEquation[i] ** 2
-
-            n += adversaryHyperplane.hyperPlaneEquation[dimension]
-            distance = (abs(n))/math.sqrt(b)
-
-            if n < 0  and  distance <= 0.2:
-                # Adversary strategy. Upper has more. Move upper points to lower place.
-                movedPoint = [x + (-y) for x, y in zip(point, getOrthogonalUnitVector(
-                    adversaryHyperplane))]
-                if isTwoPointsOnTheSameSideOfHyperplane(movedPoint, point, defenderHyperplane): #Check if moved points hurts defender
-                    # utility.
-                    finalMovedPointList.append(movedPoint)
-                else:
-                    finalMovedPointList.append(point)
-            else:
-                finalMovedPointList.append(point)
-    # elif inputLineWithUtilities[1][0] == inputLineWithUtilities[1][2] + inputLineWithUtilities[1][3]: # Lower has more
-    else:  # Lower has more. Move Upper points to Lower place.
-        for point in movedDefenderPointsList:
-            n = 0
-            dimension = len(point)
-            b = 0  # Use for calculating point to hyperplane distance.
-            for i in range(dimension):
-                n += point[i] * adversaryHyperplane.hyperPlaneEquation[i]
-                b += adversaryHyperplane.hyperPlaneEquation[i] ** 2
-
-            n += adversaryHyperplane.hyperPlaneEquation[dimension]
-            distance = (abs(n)) / math.sqrt(b)
-
-            if n > 0 and distance <= 0.2:
-                # Adversary strategy. Lower has more. Move lower points to upper place.
-                movedPoint = [x - (-y) for x, y in
-                              zip(point, getOrthogonalUnitVector(adversaryHyperplane))]
-                if isTwoPointsOnTheSameSideOfHyperplane(movedPoint, point, defenderHyperplane):  #Check if moved points hurts defender
-                    # utility.
-                    finalMovedPointList.append(movedPoint)
-                else:
-                    finalMovedPointList.append(point)
-            else:
-                finalMovedPointList.append(point)
-    # else:  # If two side has the same number of points. Haven't implemented.
-    #     raise ValueError("Crash at movedPointList")
-    #     ##########################Haven't implemented!!!!!!!!!!!!!!!!!!
-
+    # Problems with this algorithm. Check back later!!!
+    # # Move points to hurt the adversary.
+    # if adversaryHyperplane.maximumPointNumber == adversaryHyperplane.upperPointNumber + \
+    #         adversaryHyperplane.onLinePointNumber: # Upper has more
+    #     for point in movedDefenderPointsList:
+    #
+    #         n = 0
+    #         dimension = len(point)
+    #         b = 0 # Use for calculating point to hyperplane distance.
+    #         for i in range(dimension):
+    #             n += point[i] * adversaryHyperplane.hyperPlaneEquation[i]
+    #             b += adversaryHyperplane.hyperPlaneEquation[i] ** 2
+    #
+    #         n += adversaryHyperplane.hyperPlaneEquation[dimension]
+    #         distance = (abs(n))/math.sqrt(b)
+    #
+    #         if n > 0  and  distance <= 0.2:
+    #             # Adversary strategy. Upper has more. Move upper points to lower place.
+    #             movedPoint = [x - y for x, y in zip(point, getOrthogonalUnitVector(
+    #                 adversaryHyperplane))]
+    #             if isTwoPointsOnTheSameSideOfHyperplane(movedPoint, point, defenderHyperplane): #Check if moved points hurts defender
+    #                 # utility.
+    #                 finalMovedPointList.append(movedPoint)
+    #             else:
+    #                 finalMovedPointList.append(point)
+    #         else:
+    #             finalMovedPointList.append(point)
+    # # elif inputLineWithUtilities[1][0] == inputLineWithUtilities[1][2] + inputLineWithUtilities[1][3]: # Lower has more
+    # else:  # Lower has more. Move Upper points to Lower place.
+    #     for point in movedDefenderPointsList:
+    #         n = 0
+    #         dimension = len(point)
+    #         b = 0  # Use for calculating point to hyperplane distance.
+    #         for i in range(dimension):
+    #             n += point[i] * adversaryHyperplane.hyperPlaneEquation[i]
+    #             b += adversaryHyperplane.hyperPlaneEquation[i] ** 2
+    #
+    #         n += adversaryHyperplane.hyperPlaneEquation[dimension]
+    #         distance = (abs(n)) / math.sqrt(b)
+    #
+    #         if n < 0 and distance <= 0.2:
+    #             # Adversary strategy. Lower has more. Move lower points to upper place.
+    #             movedPoint = [x + y for x, y in
+    #                           zip(point, getOrthogonalUnitVector(adversaryHyperplane))]
+    #             if isTwoPointsOnTheSameSideOfHyperplane(movedPoint, point, defenderHyperplane):  #Check if moved points hurts defender
+    #                 # utility.
+    #                 finalMovedPointList.append(movedPoint)
+    #             else:
+    #                 finalMovedPointList.append(point)
+    #         else:
+    #             finalMovedPointList.append(point)
+    # # else:  # If two side has the same number of points. Haven't implemented.
+    # #     raise ValueError("Crash at movedPointList")
+    # #     ##########################Haven't implemented!!!!!!!!!!!!!!!!!!
+    finalMovedPointList = movedDefenderPointsList
     # print(movedPointsList)
     defenderMaximumPoints, _, _, _ = countPointsOfHyperplane(defenderHyperplane, finalMovedPointList)
     adversarymaximumPionts, _,_,_ = countPointsOfHyperplane(adversaryHyperplane, finalMovedPointList)
 
-    if defenderMaximumPoints >= adversarymaximumPionts:
+    if defenderMaximumPoints >= adversarymaximumPionts and defenderMaximumPoints != 0:
         return True, finalMovedPointList, defenderMaximumPoints, adversarymaximumPionts
+    elif defenderMaximumPoints == 0:
+        raise Exception("Moved points failure. Bug!")
     else:
         return False, [], defenderMaximumPoints, adversarymaximumPionts
 
 
 def isTwoPointsOnTheSameSideOfHyperplane(pointA, pointB, hyperplane:HyperPlane):
-    isUpperA = 0
-    isUpperB = 0
 
     m = 0
     n = 0
@@ -211,17 +214,10 @@ def isTwoPointsOnTheSameSideOfHyperplane(pointA, pointB, hyperplane:HyperPlane):
     m += hyperplane.hyperPlaneEquation[dimension]
     n += hyperplane.hyperPlaneEquation[dimension]
 
-    if m > 0:
-        if n < 0:
-            return False
-        else:
-            return True
-    elif m < 0:
-        if n > 0:
-            return False
-        else:
-            return True
+    if m * n < 0:
+        return False
     else:
+        # print("Point Moved.")
         return True
 
 def countPointsOfHyperplane(inputHyperPlane:HyperPlane, inputPointList):
