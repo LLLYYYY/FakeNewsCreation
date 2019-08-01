@@ -5,17 +5,23 @@ from itertools import combinations
 import sys
 import os
 import timeit
+plt.switch_backend('agg')
 
-def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smallestNormThreshold = 0.1) -> (bool, int):
+def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smallestNormThreshold = 0.1, runCount = 0) -> (
+        bool, int):
     """Parameter input: Output parameter. Return run time."""
 
     functionStartTime = timeit.default_timer()
     outputDirectory = os.path.join(outputDirectory, str(pointDimension)+"D"+str(numOfPoint)+"P")
     if not os.path.isdir(outputDirectory):
         os.mkdir(outputDirectory)
+    outputDirectory = os.path.join(outputDirectory, str(runCount))
+    if not os.path.isdir(outputDirectory):
+        os.mkdir(outputDirectory)
 
 
     pointList = []
+    originalPointList = []
     storyPointList = []
     storyVectorNumber = 50
     hyperplaneList = []
@@ -23,27 +29,34 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
     smallestL2NormList = []
     adversaryMaximumPointList = []
     iter = 0
+    ci = 1
     numOfIteration = []
 
     for i in range(numOfPoint):
-        pointList.append(np.random.ranf(pointDimension).tolist())
+        pointList.append([ 2*x-1 for x in np.random.ranf(pointDimension).tolist()])
+    originalPointList = pointList
 
     for i in range(storyVectorNumber):
         n = np.random.ranf(pointDimension).tolist()
         storyPointList.append(n)
+    unbiasedStoryVector = getMeanHyperplane(storyPointList)
 
     while smallestL2Norm > smallestNormThreshold:
-        print("Running dimension "+ str(pointDimension)+ " with point number: "+ str(numOfPoint))
-        meanStoryPoint = getMeanStoryPoint(storyPointList)
-        unbiasedStoryVector = getHyperplaneEquation([meanStoryPoint, [-0.0001]*len(meanStoryPoint)])
+        print("Running dimension " + str(pointDimension)+ " with point number: "+ str(numOfPoint))
         print("The Unbiased story vector is " + str(unbiasedStoryVector.hyperPlaneEquation))
 
-        if (len(smallestL2NormList) > 51) and (abs(smallestL2NormList[-1] - smallestL2NormList[-50]) < 0.001 or \
-                smallestL2NormList[-1] - smallestL2NormList[-50] >= 0):  #
-            # Prevent
-            # Deadloop.
-            print("Fail to go further.")
-            return False, 0
+        plotOutputDirectory = os.path.join(outputDirectory, str(iter))
+        if not os.path.isdir(plotOutputDirectory):
+            os.mkdir(plotOutputDirectory)
+
+
+        if (len(smallestL2NormList) > 4) and (abs(smallestL2NormList[-1] - smallestL2NormList[-3]) < 0.001 or \
+                smallestL2NormList[-1] - smallestL2NormList[-3] >= 0):  #
+            # Prevent Deadloop.
+            print("Fail to go further.\n\n\n\n\n\n\n\n\n")
+
+            functionEndTime = timeit.default_timer()
+            return False, (functionEndTime - functionStartTime)
 
 
         iterRange = [i for i in range(numOfPoint)]
@@ -56,17 +69,18 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
 
         print("Finished getting hyperplane list. The size of the list is " + str(len(hyperplaneList)) + ".")
 
-        getHyperplaneListWithUtilities(hyperplaneList, pointList, unbiasedStoryVector.hyperPlaneEquation)
+        getHyperplaneListWithUtilities(hyperplaneList, pointList, unbiasedStoryVector.hyperPlaneEquation,
+                                       inputStoryVector=storyPointList, ci= ci)
 
         print("Finished Getting Lines with Utilities")
         hyperplaneList.sort(key=lambda pair: pair.l2Norm)
         print("Finished Sorting Lines.")
 
         #Find the best strategy for adversary.
-        adversaryHyperplane = HyperPlane([],[])
-        for hyperplan in hyperplaneList:
-            if hyperplan.maximumPointNumber > adversaryHyperplane.maximumPointNumber:
-                adversaryHyperplane = hyperplan
+        adversaryHyperplane = Hyperplane([], [])
+        for hyperplane in hyperplaneList:
+            if hyperplane.maximumPointNumber > adversaryHyperplane.maximumPointNumber:
+                adversaryHyperplane = hyperplane
 
         print("Finished finding the best strategy for adversary")
 
@@ -80,7 +94,7 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
             plt.plot(defenderPlotLineX, defenderPlotLineY)
             plt.plot(adversaryPlotLineX, adversaryPlotLineY)
 
-            plt.savefig(os.path.join(outputDirectory, "figure1.png"))
+            plt.savefig(os.path.join(plotOutputDirectory, "figure1.png"))
             plt.close(fig)
 
         # Now iterate the hyperplane list and try to move points.
@@ -92,7 +106,8 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
             isSucceed, movedPointList, defenderMaximumPoint, adversaryMaximumPoint = movePoints(hyperplaneList[i],
                                                                                                      adversaryHyperplane,
 
-                                                                                     pointList)
+                                                                                     pointList, originalPointList,
+                                                                                                ci=ci)
 
             # if i == len(hyperplaneList) - 2: # For testing and visualization purpose.
             #     print("Debug ploting mode.")
@@ -111,6 +126,11 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
             if isSucceed == False:
                 continue
             else:
+
+                if movedPointList == pointList:
+                    print("Points not moving.")
+                    continue
+
                 print("Found defender hyperplane " + str(i) + " that can do better than adversary hyperplane. \n" +
                       "The Defender maximum point count is " + str(defenderMaximumPoint) + "\n" +
                       "The Adversary maximum point count is " + str(adversaryMaximumPoint) + ".")
@@ -129,9 +149,8 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
                     # fig.set_ylim(bottom=-1, top=2)
                     plt.plot(defenderPlotLineX, defenderPlotLineY)
                     plt.plot(adversaryPlotLineX, adversaryPlotLineY)
-                    plt.savefig(os.path.join(outputDirectory, "figure2.png"))
+                    plt.savefig(os.path.join(plotOutputDirectory, "figure2.png"))
                     plt.close(fig)
-
 
                 pointList = movedPointList
 
@@ -140,15 +159,12 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
                     plt.scatter(*zip(*pointList))
                     defenderPlotLineX, defenderPlotLineY = zip(*hyperplaneList[i].pointList)
                     adversaryPlotLineX, adversaryPlotLineY = zip(*adversaryHyperplane.pointList)
-                    # fig.set_xlim(left=-1, right=2)
-                    # fig.set_ylim(bottom=-1, top=2)
+
                     plt.plot(defenderPlotLineX, defenderPlotLineY)
                     plt.plot(adversaryPlotLineX, adversaryPlotLineY)
-                    plt.savefig(os.path.join(outputDirectory, "figure3.png"))
+                    plt.savefig(os.path.join(plotOutputDirectory, "figure3.png"))
                     plt.close(fig)
                 break
-
-
 
         plt.show()
         print("Finished Printing Charts.")
@@ -178,8 +194,8 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
 
 # Run
 
-dimensionList = [2,5,10]
-pointNumList = [15, 50, 100, 150, 300, 500, 700, 900, 1000]
+dimensionList = [2]#,3,4,5]
+pointNumList = [50]#, 30, 40, 50, 70, 90]#, 100]# , 120, 150]#, 500, 700, 900, 1000]
 dimensionRunTimeList = []
 pointNumRunTimeList = []
 
@@ -190,28 +206,44 @@ if not os.path.isdir(outputDirectory):
 # for dimemsion in dimensionList:
 #     isSucceed = False
 #     runtimeList = []
-#     while not isSucceed:
+#     while not isSucceed or len(runtimeList) <= 3:
 #         isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=dimemsion, numOfPoint=
-#     150)
+#     20)
 #         if isSucceed:
 #             runtimeList.append(runtime)
 #     dimensionRunTimeList.append(sum(runtimeList)/len(runtimeList))
 
-for pointNum in pointNumList:
-    isSucceed = False
-    runtimeList = []
-    while not isSucceed or len(runtimeList) <= 10:
-        isSucceed, runtime = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2, numOfPoint=pointNum)
-        if isSucceed:
-            runtimeList.append(runtime)
-    pointNumRunTimeList.append(sum(runtimeList)/len(runtimeList))
+# for pointNum in pointNumList:
+#     isSucceed = False
+#     runtimeList = []
+#     while not isSucceed or len(runtimeList) <= 10:
+#
+#         isSucceed, runtime = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2, numOfPoint=pointNum,
+#                                            runCount=len(runtimeList))
+#         if isSucceed:
+#             runtimeList.append(runtime)
+#     pointNumRunTimeList.append(sum(runtimeList)/len(runtimeList))
+
+# # For Debug Purpose:::::::###########
+# for pointNum in pointNumList:
+#     isSucceed = False
+#     runtimeList = []
+#     while len(runtimeList) <= 10:
+#
+#         isSucceed, runtime = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2, numOfPoint=pointNum,
+#                                            runCount=len(runtimeList))
+#         runtimeList.append(runtime)
+#     pointNumRunTimeList.append(sum(runtimeList)/len(runtimeList))
 
 # fig = plt.figure()
-# plt.plot( dimensionIter , dimensionRunTimeList)
+# plt.plot( dimensionList , dimensionRunTimeList)
 # plt.savefig(os.path.join(outputDirectory, "Dimension_VS_Runtime.png"))
 # plt.close(fig)
 
-fig = plt.figure()
-plt.plot( pointNumList , pointNumRunTimeList)
-plt.savefig(os.path.join(outputDirectory, "PointNum_VS_Runtime.png"))
-plt.close(fig)
+# fig = plt.figure()
+# plt.plot( pointNumList , pointNumRunTimeList)
+# plt.savefig(os.path.join(outputDirectory, "PointNum_VS_Runtime.png"))
+# plt.close(fig)
+
+isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=2, numOfPoint=
+    50)
