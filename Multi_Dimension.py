@@ -64,7 +64,7 @@ def getOrthogonalUnitVector(inputHyperplane:Hyperplane):
 
     return orthogonalUnitVector
 
-#TODO: FIX IMPLEMENTATION OF L2 NORM AND ADVERSARY UTILITY
+
 def getHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], inputPointList, unbiasedVector, inputStoryVector, ci):
 
     """Return hyperPlane list with utilities.
@@ -230,7 +230,7 @@ def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, i
                                                              ci= ci)
     adversarymaximumPoints, _, _, _ , _, _ = countPointsOfHyperplane(adversaryHyperplane, finalMovedPointList, ci = ci)
 
-    if defenderMaximumPoints >= adversarymaximumPoints and defenderMaximumPoints != 0:
+    if defenderMaximumPoints >= adversarymaximumPoints and defenderMaximumPoints > 0:
         return True, finalMovedPointList, defenderMaximumPoints, adversarymaximumPoints
     elif defenderMaximumPoints == 0:
         raise Exception("Moved points failure. Bug!")

@@ -25,12 +25,13 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
     storyPointList = []
     storyVectorNumber = 100
     hyperplaneList = []
-    smallestL2Norm = 100
     smallestL2NormList = []
     adversaryMaximumPointList = []
     iter = 0
     ci = 1
     numOfIteration = []
+
+    epsilon = 0.001 # Use for determine the minimum l2norm change.
 
     for i in range(numOfPoint):
         pointList.append([ 2*x-1 for x in np.random.ranf(pointDimension).tolist()])
@@ -41,21 +42,14 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
         storyPointList.append(n)
     unbiasedStoryVector = getMeanHyperplane(storyPointList)
 
-    #TODO: FIX TERMINATION CONDITION OF OUTER ITERATIONS..CONVERGE WHEN DIfference in L2 norm in between iterations
-    # goes below epsilon
-    while len(smallestL2NormList) > 1 and abs(smallestL2NormList[-1] - smallestL2NormList[-2]) <= 0.001:
+    while len(smallestL2NormList) <= 1 or ( len(smallestL2NormList) > 1 and abs(smallestL2NormList[-1] -
+                                                                               smallestL2NormList[-2]) > epsilon):
         print("Running dimension " + str(pointDimension)+ " with point number: "+ str(numOfPoint))
         print("The Unbiased story vector is " + str(unbiasedStoryVector.hyperPlaneEquation))
 
         plotOutputDirectory = os.path.join(outputDirectory, str(iter))
         if not os.path.isdir(plotOutputDirectory):
             os.mkdir(plotOutputDirectory)
-
-        #TODO: FIX THIS CONDITION
-        if len(smallestL2NormList) > 1 and abs(smallestL2NormList[-1] - smallestL2NormList[-2]) <= 0.001:
-            print("Fail to go further.\n\n\n\n\n\n\n\n\n")
-            functionEndTime = timeit.default_timer()
-            return False, (functionEndTime - functionStartTime)
 
         #if (len(smallestL2NormList) > 4) and (abs(smallestL2NormList[-1] - smallestL2NormList[-2]) < 0.001 or \
         #        smallestL2NormList[-1] - smallestL2NormList[-2] >= 0):  #
@@ -85,6 +79,7 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
 
         #Find the best strategy for adversary.
         adversaryHyperplane = Hyperplane([], [])
+        defenderHyperplane = Hyperplane([], [])
         for hyperplane in hyperplaneList:
             if hyperplane.maximumPointNumber > adversaryHyperplane.maximumPointNumber:
                 adversaryHyperplane = hyperplane
@@ -107,7 +102,7 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
         # Now iterate the hyperplane list and try to move points.
         for i in range(len(hyperplaneList)):
             if hyperplaneList[i] == adversaryHyperplane:
-                print("The defender hyperplane and the adversary hyperplane matched.")
+                print("The defender hyperplane and the adversary hyperplane matched. List number: " + str(i))
                 break
 
             isSucceed, movedPointList, defenderMaximumPoint, adversaryMaximumPoint = movePoints(hyperplaneList[i],
@@ -141,6 +136,8 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
                 print("Found defender hyperplane " + str(i) + " that can do better than adversary hyperplane. \n" +
                       "The Defender maximum point count is " + str(defenderMaximumPoint) + "\n" +
                       "The Adversary maximum point count is " + str(adversaryMaximumPoint) + ".")
+
+                defenderHyperplane = hyperplaneList[i]
 
                 # # For Debug purpose.
                 # print(hyperplaneList[0].l2Norm,  hyperplaneList[1].l2Norm, hyperplaneList[2].l2Norm)
@@ -176,8 +173,7 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
         plt.show()
         print("Finished Printing Charts.")
 
-        #TODO: DEFENDER HYPERPLANE, NOT ADVERSARY???
-        smallestL2Norm = adversaryHyperplane.l2Norm
+        smallestL2Norm = defenderHyperplane.l2Norm
 
         print("Current smallestL2Norm is " + str(smallestL2Norm) + ".\n\n\n")
 
@@ -197,6 +193,9 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
     plt.plot(numOfIteration, adversaryMaximumPointList)
     plt.savefig(os.path.join(outputDirectory, "Iter_VS_Adv.png"))
     plt.close(fig)
+
+    if movedPointList == originalPointList:
+        return False, (functionEndTime - functionStartTime)
 
     return True, (functionEndTime - functionStartTime)
 
@@ -254,4 +253,4 @@ if not os.path.isdir(outputDirectory):
 # plt.close(fig)
 
 isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=2, numOfPoint=
-    50)
+    150)
