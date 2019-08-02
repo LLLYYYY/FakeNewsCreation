@@ -44,6 +44,11 @@ def getHyperplaneEquation(pointList):
     if hyperplaneEauation[1] < 0:
         hyperplaneEauation = [-x for x in hyperplaneEauation]
 
+    if hyperplaneEauation[1] == 0:
+        raise ValueError("Hyperplane parallel to the y axis. Error!")
+    else:
+        devider = hyperplaneEauation[1]
+        hyperplaneEauation = [x/devider for x in hyperplaneEauation]
 
     outputHyperplaneEquation = Hyperplane(hyperPlaneEquation = hyperplaneEauation,
                                           pointList= pointList)
@@ -70,13 +75,14 @@ def getHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], inputPoint
     for i in range(len(inputHyperPlaneList)):
         inputHyperPlaneList[i].maximumPointNumber, \
         inputHyperPlaneList[
-            i].upperPointNumber, inputHyperPlaneList[i].lowerPointNumber, inputHyperPlaneList[i].onLinePointNumber, inputHyperPlaneList[i].pointScribed, inputHyperPlaneList[i].M = \
+            i].upperPointNumber, inputHyperPlaneList[i].lowerPointNumber, inputHyperPlaneList[i].onLinePointNumber, \
+        inputHyperPlaneList[i].pointSubscription, inputHyperPlaneList[i].M = \
             countPointsOfHyperplane(
             inputHyperPlaneList[i], inputPointList,  ci)
 
         # L2 Norm:
         norm = 0
-        for k in range(len(inputHyperPlaneList[i].hyperPlaneEquation-1)): # Don't count the constant variable?
+        for k in range(len(inputHyperPlaneList[i].hyperPlaneEquation)-1): # Don't count the constant variable?
             norm += (inputHyperPlaneList[i].hyperPlaneEquation[k]/inputHyperPlaneList[i].hyperPlaneEquation[1] -
             unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
         norm = math.sqrt(norm)
@@ -267,9 +273,9 @@ def countPointsOfHyperplane(inputHyperplane:Hyperplane, inputPointList, ci):
         # elif inputPointList[i] == inputHyperplane.pointList[1]:  # At least two points
         #     lowerPointNumber += 1
         # elif n > 0:
-        if n > 0:
+        if n > -0.0001:
             upperPointNumber += 1
-        elif n < 0:
+        elif n < 0.0001:
             lowerPointNumber += 1
         else:
             onLinePointNumber += 1

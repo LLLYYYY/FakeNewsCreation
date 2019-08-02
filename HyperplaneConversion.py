@@ -3,51 +3,56 @@ import sys
 from DataStructure import *
 from Multi_Dimension import *
 
-K = 10
-e = 0.001
-ci = 0
+k = 4
+e = 0.1
+ci = 1
 
 
-def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVector):
+
+def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorList):
 
     my_prob = cplex.Cplex()
     my_prob.objective.set_sense(my_prob.objective.sense.maximize)
 
-    my_obj = len(storyVector) * [0]
-    my_upperbound = len(storyVector) * [1]
-    my_colnames = ["a" + str(j) for j in range(len(storyVector))]
-    #######
-    my_colnames.append("a"+str(len(storyVector)))
-    #######
+    my_obj = (len(storyVectorList)+1) * [0] # Not maximizing anything. No objective function.
+
+    my_upperbound = len(storyVectorList) * [1]
+    my_upperbound.append(cplex.infinity)  # For variable Alpha.
+
+    my_lowerbound = len(storyVectorList) * [-1]
+    my_lowerbound.append(-cplex.infinity) # For Variable Alpha.
+
+    my_colnames = ["a" + str(j) for j in range(len(storyVectorList))]
+    my_colnames.append("alpha")
+
 
     my_prob.variables.add(obj=my_obj, ub=my_upperbound, names=my_colnames)
 
-    my_rownames = ["r" + str(i) for i in range(2 * len(pointList))]
+    my_rownames = ["r" + str(i) for i in range(2 * len(pointList) + 1)]
     my_sense = len(pointList) * "GL"
-    # my_sense = my_sense + "E"
+    my_sense = my_sense + "L"  # Sense for Sum(aj) <= k
     my_rows = []
     my_rhs = []
 
-    #TODO: Should be pointlist...2 constraints fir each point, not each story
-    for i in range(len(storyVector)):
+    for i in range(len(pointList)):
 
-        rhs = [( K * ci - consumerHyperplane.M * (1 - consumerHyperplane.pointScribed[i])),( K * ci - e +
-                                                                                           consumerHyperplane.M *
-               consumerHyperplane.pointScribed[i]) ]
+        rhs = [(ci - consumerHyperplane.M * (1 - consumerHyperplane.pointSubscription[i])), (ci - e +
+                                                                                             consumerHyperplane.M *
+                                                                                             consumerHyperplane.pointSubscription[i])]
         my_rhs += rhs
 
         rowParameter = []
-        #TODO: Should be storyVector.
-        for j in range(len(pointList)):
-            n = [pointList[i][k] * storyVector[j][k] for k in range(len(pointList[i]))]
-            rowParameter.append(sum(n))
-        # rowParameter += [-ci]
+
+        for j in range(len(storyVectorList)):
+            n = [pointList[i][l] * storyVectorList[j][l] for l in range(len(pointList[i]))]
+            rowParameter.append(1 / k * sum(n))
+        rowParameter.append(1)  # Parameter for Alpha.
         my_rows += 2 * [ [my_colnames, rowParameter] ]
 
-        #TODO ADD real ALPHA, CONSTRAINT on a_j<k, and add lower bound on a_j
 
-    # my_rows.append([my_colnames, len(storyVector)*[1] + [-1]])
-    # my_rhs.append(0)
+
+    my_rows.append([my_colnames[:-1], len(storyVectorList)*[1]]) #sum(aj) <= k
+    my_rhs.append(k)
 
     print(my_rows)
     print(my_rhs)
@@ -65,17 +70,36 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVector)
         print("Column %d:  Value = %10f" %(j, x[j]))
 
 
+    endpoint = [0,0]
+    for j in range(numcols - 1):
+        temp = [x[j] * storyVectorList[j][l] for l in range(len(storyVectorList[j]))]
+        temp = [temp[l] / k for l in range(len(temp))]
+        endpoint = [l+p for l,p in zip(temp,endpoint)]
+    print("Endpoint is: " + str(endpoint))
+
+    # generatedHyperplane = getHyperplaneEquation([endpoint, len(pointList[0])*[-0.001]])
+    #TODO: Add points that can plot the generated hyperplane.
+    generatedHyperplane = Hyperplane(endpoint+[x[numcols-1]], [])
+
+    getHyperplaneListWithUtilities([generatedHyperplane], pointList, getMeanHyperplane(pointList).hyperPlaneEquation,
+                                    storyVectorList, ci)
+    print(generatedHyperplane.hyperPlaneEquation)
+    print("Generated Hyperplane's points subscription:" + str(generatedHyperplane.pointSubscription))
+
+    return generatedHyperplane
+
+
 def testHyperPlaneConversion():
-    pointList = [[1,1], [1,2], [2,1], [4,4.1]]
-    storyVectorList = [[1,1], [1,3], [3,1], [4,4.1]]
-    hyperplane = getHyperplaneEquation([[1,1],[4, 4.1]])
+    pointList = [[1,1], [1,3], [3,1], [4,4.1]]
+    storyVectorList = [[1,1], [1,2], [2,1], [4,4.1]]
+    hyperplane = getHyperplaneEquation([[2,1],[4, 4.1]])
     hyperplaneList = [hyperplane]
 
     getHyperplaneListWithUtilities(hyperplaneList,pointList, getMeanHyperplane(pointList).hyperPlaneEquation,
                                    storyVectorList, ci)
 
     print(hyperplane.hyperPlaneEquation)
-    print(hyperplaneList[0].pointScribed)
+    print(hyperplaneList[0].pointSubscription)
 
     hyperPlaneConversion(hyperplaneList[0], pointList, storyVectorList)
 

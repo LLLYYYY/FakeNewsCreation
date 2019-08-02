@@ -43,7 +43,7 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
 
     #TODO: FIX TERMINATION CONDITION OF OUTER ITERATIONS..CONVERGE WHEN DIfference in L2 norm in between iterations
     # goes below epsilon
-    while smallestL2Norm > smallestNormThreshold:
+    while len(smallestL2NormList) > 1 and abs(smallestL2NormList[-1] - smallestL2NormList[-2]) <= 0.001:
         print("Running dimension " + str(pointDimension)+ " with point number: "+ str(numOfPoint))
         print("The Unbiased story vector is " + str(unbiasedStoryVector.hyperPlaneEquation))
 
