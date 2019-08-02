@@ -23,7 +23,7 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
     pointList = []
     originalPointList = []
     storyPointList = []
-    storyVectorNumber = 50
+    storyVectorNumber = 100
     hyperplaneList = []
     smallestL2Norm = 100
     smallestL2NormList = []
@@ -37,10 +37,12 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
     originalPointList = pointList
 
     for i in range(storyVectorNumber):
-        n = np.random.ranf(pointDimension).tolist()
+        n = [ 2*x-1 for x in np.random.ranf(pointDimension).tolist()]
         storyPointList.append(n)
     unbiasedStoryVector = getMeanHyperplane(storyPointList)
 
+    #TODO: FIX TERMINATION CONDITION OF OUTER ITERATIONS..CONVERGE WHEN DIfference in L2 norm in between iterations
+    # goes below epsilon
     while smallestL2Norm > smallestNormThreshold:
         print("Running dimension " + str(pointDimension)+ " with point number: "+ str(numOfPoint))
         print("The Unbiased story vector is " + str(unbiasedStoryVector.hyperPlaneEquation))
@@ -49,14 +51,19 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
         if not os.path.isdir(plotOutputDirectory):
             os.mkdir(plotOutputDirectory)
 
-
-        if (len(smallestL2NormList) > 4) and (abs(smallestL2NormList[-1] - smallestL2NormList[-3]) < 0.001 or \
-                smallestL2NormList[-1] - smallestL2NormList[-3] >= 0):  #
-            # Prevent Deadloop.
+        #TODO: FIX THIS CONDITION
+        if len(smallestL2NormList) > 1 and abs(smallestL2NormList[-1] - smallestL2NormList[-2]) <= 0.001:
             print("Fail to go further.\n\n\n\n\n\n\n\n\n")
-
             functionEndTime = timeit.default_timer()
             return False, (functionEndTime - functionStartTime)
+
+        #if (len(smallestL2NormList) > 4) and (abs(smallestL2NormList[-1] - smallestL2NormList[-2]) < 0.001 or \
+        #        smallestL2NormList[-1] - smallestL2NormList[-2] >= 0):  #
+        #    # Prevent Deadloop.
+        #    print("Fail to go further.\n\n\n\n\n\n\n\n\n")
+
+        #    functionEndTime = timeit.default_timer()
+        #    return False, (functionEndTime - functionStartTime)
 
 
         iterRange = [i for i in range(numOfPoint)]
@@ -169,6 +176,7 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
         plt.show()
         print("Finished Printing Charts.")
 
+        #TODO: DEFENDER HYPERPLANE, NOT ADVERSARY???
         smallestL2Norm = adversaryHyperplane.l2Norm
 
         print("Current smallestL2Norm is " + str(smallestL2Norm) + ".\n\n\n")

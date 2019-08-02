@@ -22,6 +22,7 @@ def getMeanHyperplane(inputStoryVectorList):
     meanHyperplane = Hyperplane([*meanPoint, 0], [meanPoint, [-0.0001, -0.0001]])
     return meanHyperplane
 
+#TODO: HANDLE PARALLEL VECTORS IN HIGHER DIMENSIONS
 def getHyperplaneEquation(pointList):
     """Input the point that require to form ONE hyperplane. Return the hyperplane equation.
         Dimension Free.
@@ -58,6 +59,7 @@ def getOrthogonalUnitVector(inputHyperplane:Hyperplane):
 
     return orthogonalUnitVector
 
+#TODO: FIX IMPLEMENTATION OF L2 NORM AND ADVERSARY UTILITY
 def getHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], inputPointList, unbiasedVector, inputStoryVector, ci):
 
     """Return hyperPlane list with utilities.
@@ -74,7 +76,7 @@ def getHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], inputPoint
 
         # L2 Norm:
         norm = 0
-        for k in range(len(inputHyperPlaneList[i].hyperPlaneEquation)): # Don't count the constant variable?
+        for k in range(len(inputHyperPlaneList[i].hyperPlaneEquation-1)): # Don't count the constant variable?
             norm += (inputHyperPlaneList[i].hyperPlaneEquation[k]/inputHyperPlaneList[i].hyperPlaneEquation[1] -
             unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
         norm = math.sqrt(norm)
