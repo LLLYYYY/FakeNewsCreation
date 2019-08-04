@@ -26,7 +26,7 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorL
     my_colnames.append("alpha")
 
 
-    my_prob.variables.add(obj=my_obj, ub=my_upperbound, names=my_colnames)
+    my_prob.variables.add(obj=my_obj, ub=my_upperbound, lb = my_lowerbound, names=my_colnames)
 
     my_rownames = ["r" + str(i) for i in range(2 * len(pointList) + 1)]
     my_sense = len(pointList) * "GL"
@@ -92,7 +92,7 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorL
 def testHyperPlaneConversion():
     pointList = [[1,1], [1,3], [3,1], [4,4.1]]
     storyVectorList = [[1,1], [1,2], [2,1], [4,4.1]]
-    hyperplane = getHyperplaneEquation([[2,1],[4, 4.1]])
+    hyperplane = getHyperplaneEquation([[1, 1],[4, 4.1]])
     hyperplaneList = [hyperplane]
 
     getHyperplaneListWithUtilities(hyperplaneList,pointList, getMeanHyperplane(pointList).hyperPlaneEquation,

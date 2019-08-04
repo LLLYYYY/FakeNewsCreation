@@ -1,4 +1,5 @@
 from Multi_Dimension import *
+from HyperplaneConversion import *
 import numpy as np
 import matplotlib.pyplot as plt
 from itertools import combinations
@@ -74,6 +75,18 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
                                        inputStoryVector=storyPointList, ci= ci)
 
         print("Finished Getting Lines with Utilities")
+
+        convertedHyperplane = []
+        for hyperplane in hyperplaneList:
+            try:
+                convertedHyperplane.append(hyperPlaneConversion(hyperplane, pointList, storyPointList))
+            except:
+                continue
+        hyperplaneList = convertedHyperplane
+
+        print("Finished converting hyperplanes.")
+
+
         hyperplaneList.sort(key=lambda pair: pair.l2Norm)
         print("Finished Sorting Lines.")
 
@@ -84,14 +97,24 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
             if hyperplane.maximumPointNumber > adversaryHyperplane.maximumPointNumber:
                 adversaryHyperplane = hyperplane
 
+
         print("Finished finding the best strategy for adversary")
 
         # Print the original graph.
         if pointDimension == 2:
             fig = plt.figure()
             plt.scatter(*zip(*pointList))
-            defenderPlotLineX, defenderPlotLineY = zip(*hyperplaneList[0].pointList)
-            adversaryPlotLineX, adversaryPlotLineY = zip(*adversaryHyperplane.pointList)
+
+            defenderPlotLineX = [-1, 1]
+            adversaryPlotLineX = [-1, 1]
+            defenderHyperplaneEquation = hyperplaneList[0].hyperPlaneEquation
+            adversaryHyperplaneEquation = adversaryHyperplane.hyperPlaneEquation
+            defenderPlotLineY = [defenderHyperplaneEquation[0]/defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
+                2]/defenderHyperplaneEquation[1], -defenderHyperplaneEquation[0]/defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
+                2]/defenderHyperplaneEquation[1]]
+            adversaryPlotLineY = [adversaryHyperplaneEquation[0]/adversaryHyperplaneEquation[1] - adversaryHyperplaneEquation[
+                2]/adversaryHyperplaneEquation[1], -adversaryHyperplaneEquation[0]/adversaryHyperplaneEquation[1] - adversaryHyperplaneEquation[
+                2]/adversaryHyperplaneEquation[1]]
 
             plt.plot(defenderPlotLineX, defenderPlotLineY)
             plt.plot(adversaryPlotLineX, adversaryPlotLineY)
@@ -147,10 +170,20 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
                 if pointDimension == 2:
                     fig = plt.figure()
                     plt.scatter(*zip(*pointList))
-                    defenderPlotLineX, defenderPlotLineY = zip(*hyperplaneList[i].pointList)
-                    adversaryPlotLineX, adversaryPlotLineY = zip(*adversaryHyperplane.pointList)
-                    # fig.set_xlim(left=-1, right=2)
-                    # fig.set_ylim(bottom=-1, top=2)
+                    defenderPlotLineX = [-1, 1]
+                    adversaryPlotLineX = [-1, 1]
+                    defenderHyperplaneEquation = defenderHyperplane.hyperPlaneEquation
+                    adversaryHyperplaneEquation = adversaryHyperplane.hyperPlaneEquation
+                    defenderPlotLineY = [
+                        defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
+                            2] / defenderHyperplaneEquation[1],
+                        -defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
+                            2] / defenderHyperplaneEquation[1]]
+                    adversaryPlotLineY = [
+                        adversaryHyperplaneEquation[0] / adversaryHyperplaneEquation[1] - adversaryHyperplaneEquation[
+                            2] / adversaryHyperplaneEquation[1],
+                        -adversaryHyperplaneEquation[0] / adversaryHyperplaneEquation[1] - adversaryHyperplaneEquation[
+                            2] / adversaryHyperplaneEquation[1]]
                     plt.plot(defenderPlotLineX, defenderPlotLineY)
                     plt.plot(adversaryPlotLineX, adversaryPlotLineY)
                     plt.savefig(os.path.join(plotOutputDirectory, "figure2.png"))
@@ -161,8 +194,20 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
                 if pointDimension == 2:
                     fig = plt.figure()
                     plt.scatter(*zip(*pointList))
-                    defenderPlotLineX, defenderPlotLineY = zip(*hyperplaneList[i].pointList)
-                    adversaryPlotLineX, adversaryPlotLineY = zip(*adversaryHyperplane.pointList)
+                    defenderPlotLineX = [-1, 1]
+                    adversaryPlotLineX = [-1, 1]
+                    defenderHyperplaneEquation = defenderHyperplane.hyperPlaneEquation
+                    adversaryHyperplaneEquation = adversaryHyperplane.hyperPlaneEquation
+                    defenderPlotLineY = [
+                        defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
+                            2] / defenderHyperplaneEquation[1],
+                        -defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
+                            2] / defenderHyperplaneEquation[1]]
+                    adversaryPlotLineY = [
+                        adversaryHyperplaneEquation[0] / adversaryHyperplaneEquation[1] - adversaryHyperplaneEquation[
+                            2] / adversaryHyperplaneEquation[1],
+                        -adversaryHyperplaneEquation[0] / adversaryHyperplaneEquation[1] - adversaryHyperplaneEquation[
+                            2] / adversaryHyperplaneEquation[1]]
 
                     plt.plot(defenderPlotLineX, defenderPlotLineY)
                     plt.plot(adversaryPlotLineX, adversaryPlotLineY)
@@ -253,4 +298,4 @@ if not os.path.isdir(outputDirectory):
 # plt.close(fig)
 
 isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=2, numOfPoint=
-    150)
+    20)
