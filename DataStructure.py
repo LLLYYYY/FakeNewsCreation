@@ -8,7 +8,7 @@ class Hyperplane:
     lowerPointNumber = 0
     onLinePointNumber = 0
     l2Norm = 0
-    M = 0
+    M = 0 # Not necessary
     def __init__(self, hyperPlaneEquation, pointList, pointSubscription = [], maximumPointNumber = 0,
                  upperPointNumber = 0, lowerPointNumber = 0, onLinePointNumber = 0, M = 0, l2Norm = 0):
         self.hyperPlaneEquation = hyperPlaneEquation
@@ -19,4 +19,4 @@ class Hyperplane:
         self.onLinePointNumber = onLinePointNumber
         self.l2Norm = l2Norm
         self.pointSubscription = pointSubscription
-        self.M = 0
+        self.M = 0  # Not Necessary

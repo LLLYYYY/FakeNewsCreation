@@ -25,7 +25,7 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
     pointList = []
     originalPointList = []
     storyPointList = []
-    storyVectorNumber = 100
+    storyVectorNumber = 50
     hyperplaneList = []
     smallestL2NormList = []
     adversaryMaximumPointList = []
@@ -88,10 +88,11 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
                 convertedHyperplaneList.append(convertedHyperplane)
                 originalConvertedHyperplaneMatchList.append([hyperplane, convertedHyperplane])
             except:
+                print("\n\n\n\n\n\n\n\nFailed to generated hyperplane.\n\n\n\n\n\n\n\n\n")
                 continue
 
         print("Finished converting hyperplanes.  The size of the convert hyperplanelist is:" + str(len(
-            hyperplaneList))+ ".")
+            convertedHyperplaneList))+ ".")
 
 
         # Now plot the original and converted hyperplane.
@@ -286,27 +287,27 @@ outputDirectory = sys.argv[1]
 if not os.path.isdir(outputDirectory):
     raise Exception("Output Directory not accessible.")
 
-for dimemsion in dimensionList:
-    # isSucceed = False
-    runtimeList = []
-    # while not isSucceed or len(runtimeList) <= 3:
-    while len(runtimeList) <= 3:
-        isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=dimemsion, numOfPoint=
-    20, runCount=len(runtimeList))
-        # if isSucceed:
-        runtimeList.append(runtime)
-    dimensionRunTimeList.append(sum(runtimeList)/len(runtimeList))
-
-for pointNum in pointNumList:
-    # isSucceed = False
-    runtimeList = []
-    # while not isSucceed or len(runtimeList) <= 10:
-    while len(runtimeList) <= 3:
-        isSucceed, runtime = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2, numOfPoint=pointNum,
-                                           runCount=len(runtimeList))
-        # if isSucceed:
-        runtimeList.append(runtime)
-    pointNumRunTimeList.append(sum(runtimeList)/len(runtimeList))
+# for dimemsion in dimensionList:
+#     # isSucceed = False
+#     runtimeList = []
+#     # while not isSucceed or len(runtimeList) <= 3:
+#     while len(runtimeList) <= 3:
+#         isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=dimemsion, numOfPoint=
+#     20, runCount=len(runtimeList))
+#         # if isSucceed:
+#         runtimeList.append(runtime)
+#     dimensionRunTimeList.append(sum(runtimeList)/len(runtimeList))
+#
+# for pointNum in pointNumList:
+#     # isSucceed = False
+#     runtimeList = []
+#     # while not isSucceed or len(runtimeList) <= 10:
+#     while len(runtimeList) <= 3:
+#         isSucceed, runtime = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2, numOfPoint=pointNum,
+#                                            runCount=len(runtimeList))
+#         # if isSucceed:
+#         runtimeList.append(runtime)
+#     pointNumRunTimeList.append(sum(runtimeList)/len(runtimeList))
 
 # # For Debug Purpose:::::::###########
 # for pointNum in pointNumList:
@@ -319,15 +320,15 @@ for pointNum in pointNumList:
 #         runtimeList.append(runtime)
 #     pointNumRunTimeList.append(sum(runtimeList)/len(runtimeList))
 
-fig = plt.figure()
-plt.plot( dimensionList , dimensionRunTimeList)
-plt.savefig(os.path.join(outputDirectory, "Dimension_VS_Runtime.png"))
-plt.close(fig)
+# fig = plt.figure()
+# plt.plot( dimensionList , dimensionRunTimeList)
+# plt.savefig(os.path.join(outputDirectory, "Dimension_VS_Runtime.png"))
+# plt.close(fig)
+#
+# fig = plt.figure()
+# plt.plot( pointNumList , pointNumRunTimeList)
+# plt.savefig(os.path.join(outputDirectory, "PointNum_VS_Runtime.png"))
+# plt.close(fig)
 
-fig = plt.figure()
-plt.plot( pointNumList , pointNumRunTimeList)
-plt.savefig(os.path.join(outputDirectory, "PointNum_VS_Runtime.png"))
-plt.close(fig)
-
-# isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=2, numOfPoint=
-#     20)
+isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=2, numOfPoint=
+    20)

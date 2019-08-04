@@ -3,9 +3,10 @@ import sys
 from DataStructure import *
 from Multi_Dimension import *
 
-k = 20
-e = 0.1
+k = 30
+e = 0.0001
 ci = 1
+M = 1000
 
 def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorList):
 
@@ -23,7 +24,6 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorL
     my_colnames = ["a" + str(j) for j in range(len(storyVectorList))]
     # my_colnames.append("alpha")
 
-
     my_prob.variables.add(obj=my_obj, ub=my_upperbound, lb = my_lowerbound, names=my_colnames)
 
     my_rownames = ["r" + str(i) for i in range(2 * len(pointList) + 1)]
@@ -33,10 +33,9 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorL
     my_rhs = []
 
     for i in range(len(pointList)):
-
-        rhs = [(ci - consumerHyperplane.M * (1 - consumerHyperplane.pointSubscription[i])), (ci - e +
-                                                                                             consumerHyperplane.M *
-                                                                                             consumerHyperplane.pointSubscription[i])]
+        #Changed the M.
+        rhs = [(ci - M * (1 - consumerHyperplane.pointSubscription[i])), (ci - e + M *
+                                                                          consumerHyperplane.pointSubscription[i])]
         my_rhs += rhs
 
         rowParameter = []
@@ -47,19 +46,19 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorL
         # rowParameter.append(1)  # Parameter for Alpha.
         my_rows += 2 * [ [my_colnames, rowParameter] ]
 
-
-
-    my_rows.append([my_colnames[:-1], len(storyVectorList)*[1]]) #sum(aj) <= k
+    my_rows.append([my_colnames, len(storyVectorList)*[1]]) #sum(aj) <= k
     my_rhs.append(k)
 
-    # print(my_rows)
-    # print(my_rhs)
-    # print(my_sense)
-    # print(my_colnames)
-    # print(my_rownames)
-    # sys.stdout.flush()
+    print(my_rows)
+    print(my_rhs)
+    print(my_sense)
+    print(my_colnames)
+    print(my_rownames)
+    sys.stdout.flush()
 
     my_prob.linear_constraints.add(lin_expr=my_rows, senses=my_sense, rhs=my_rhs, names=my_rownames)
+
+    my_prob.write("/Users/sly/Downloads/FakeNewsOutput/file.lp")
 
     my_prob.solve()
     numcols = my_prob.variables.get_num()
@@ -69,14 +68,14 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorL
 
 
     endpoint = [0,0]
-    for j in range(numcols - 1):
+    for j in range(numcols): #Ignored alpha
         temp = [x[j] * storyVectorList[j][l] for l in range(len(storyVectorList[j]))]
         temp = [temp[l] / k for l in range(len(temp))]
         endpoint = [l+p for l,p in zip(temp,endpoint)]
     print("Endpoint is: " + str(endpoint))
 
     # generatedHyperplane = getHyperplaneEquation([endpoint, len(pointList[0])*[-0.001]])
-    generatedHyperplane = Hyperplane(endpoint+[x[numcols-1]], [])
+    generatedHyperplane = Hyperplane(endpoint, []) #ignored alpha.
 
     getHyperplaneListWithUtilities([generatedHyperplane], pointList, getMeanHyperplane(pointList).hyperPlaneEquation,
                                     storyVectorList, ci)

@@ -293,7 +293,8 @@ def countPointsOfHyperplane(inputHyperplane:Hyperplane, inputPointList, ci):
             n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
         n.append(inputHyperplane.hyperPlaneEquation[-1])
         n = sum(n)
-        if n >= ci:
+        # if n >= ci:
+        if n >= 0:
             pointSubscribed = 1
             M += 1
             # print("News Subscribed, point" + str(inputPoint) + " Hyperplane:" + str(
