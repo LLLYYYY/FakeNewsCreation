@@ -12,16 +12,16 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorL
     my_prob = cplex.Cplex()
     my_prob.objective.set_sense(my_prob.objective.sense.maximize)
 
-    my_obj = (len(storyVectorList)+1) * [0] # Not maximizing anything. No objective function.
+    my_obj = (len(storyVectorList)) * [0] # Not maximizing anything. No objective function.
 
     my_upperbound = len(storyVectorList) * [1]
-    my_upperbound.append(cplex.infinity)  # For variable Alpha.
+    # my_upperbound.append(cplex.infinity)  # For variable Alpha.
 
-    my_lowerbound = len(storyVectorList) * [-1]
-    my_lowerbound.append(-cplex.infinity) # For Variable Alpha.
+    my_lowerbound = len(storyVectorList) * [0]
+    # my_lowerbound.append(-cplex.infinity) # For Variable Alpha.
 
     my_colnames = ["a" + str(j) for j in range(len(storyVectorList))]
-    my_colnames.append("alpha")
+    # my_colnames.append("alpha")
 
 
     my_prob.variables.add(obj=my_obj, ub=my_upperbound, lb = my_lowerbound, names=my_colnames)
@@ -44,7 +44,7 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorL
         for j in range(len(storyVectorList)):
             n = [pointList[i][l] * storyVectorList[j][l] for l in range(len(pointList[i]))]
             rowParameter.append(1 / k * sum(n))
-        rowParameter.append(1)  # Parameter for Alpha.
+        # rowParameter.append(1)  # Parameter for Alpha.
         my_rows += 2 * [ [my_colnames, rowParameter] ]
 
 
@@ -76,7 +76,6 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorL
     print("Endpoint is: " + str(endpoint))
 
     # generatedHyperplane = getHyperplaneEquation([endpoint, len(pointList[0])*[-0.001]])
-    #TODO: Add points that can plot the generated hyperplane.
     generatedHyperplane = Hyperplane(endpoint+[x[numcols-1]], [])
 
     getHyperplaneListWithUtilities([generatedHyperplane], pointList, getMeanHyperplane(pointList).hyperPlaneEquation,
@@ -90,7 +89,7 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorL
 def testHyperPlaneConversion():
     pointList = [[1,1], [1,3], [3,1], [4,4.1]]
     storyVectorList = [[1,1], [1,2], [2,1], [4,4.1]]
-    hyperplane = getHyperplaneEquation([[1, 1],[4, 4.1]])
+    hyperplane = getHyperplaneEquation([[1, 3],[4, 4.1]])
     hyperplaneList = [hyperplane]
 
     getHyperplaneListWithUtilities(hyperplaneList,pointList, getMeanHyperplane(pointList).hyperPlaneEquation,

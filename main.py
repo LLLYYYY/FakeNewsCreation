@@ -33,6 +33,7 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
     ci = 1
     numOfIteration = []
     adversaryMaximumPoint = 0
+    originalConvertedHyperplaneMatchList = []
     # movedPointList = []
 
     epsilon = 0.001 # Use for determine the minimum l2norm change.
@@ -55,6 +56,7 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
         if not os.path.isdir(plotOutputDirectory):
             os.mkdir(plotOutputDirectory)
 
+        # Implemented in the outer loop. Not necessary here.
         #if (len(smallestL2NormList) > 4) and (abs(smallestL2NormList[-1] - smallestL2NormList[-2]) < 0.001 or \
         #        smallestL2NormList[-1] - smallestL2NormList[-2] >= 0):  #
         #    # Prevent Deadloop.
@@ -79,21 +81,41 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
 
         print("Finished Getting Lines with Utilities")
 
-        convertedHyperplane = []
+        convertedHyperplaneList = []
         for hyperplane in hyperplaneList:
             try:
-                convertedHyperplane.append(hyperPlaneConversion(hyperplane, pointList, storyPointList))
+                convertedHyperplane = hyperPlaneConversion(hyperplane, pointList, storyPointList)
+                convertedHyperplaneList.append(convertedHyperplane)
+                originalConvertedHyperplaneMatchList.append([hyperplane, convertedHyperplane])
             except:
                 continue
-        hyperplaneList = convertedHyperplane
 
-        print("Finished converting hyperplanes.")
+        print("Finished converting hyperplanes.  The size of the convert hyperplanelist is:" + str(len(
+            hyperplaneList))+ ".")
 
-        # After regenerating the hyperplane. Needs to recalculate the L2Norm.
-        getHyperplaneListWithUtilities(hyperplaneList, pointList, unbiasedStoryVector.hyperPlaneEquation,
-                                       inputStoryVector=storyPointList, ci=ci)
 
-        print("Finished Getting Lines with Utilities No2")
+        # Now plot the original and converted hyperplane.
+        plotOriginalHyperplaneList = []
+        plotConvertedHyperplaneList = []
+        if len(originalConvertedHyperplaneMatchList) < 3:
+            print("Failed to convert enough hyperplane.")
+            break
+        for p in range(3):
+            matchedHyperplane = originalConvertedHyperplaneMatchList[p]
+            plotOriginalHyperplaneList.append(matchedHyperplane[0])
+            plotConvertedHyperplaneList.append(matchedHyperplane[1])
+        plotHyperplaneList(pointList, plotOriginalHyperplaneList, plotOutputDirectory, "figure1.png")
+        plotHyperplaneList(pointList, plotOriginalHyperplaneList, plotOutputDirectory, "figure2.png")
+
+        print("Finished printing the original and converted hyperplane charts.")
+
+        hyperplaneList = convertedHyperplaneList
+
+        # # After regenerating the hyperplane. Needs to recalculate the L2Norm.
+        # getHyperplaneListWithUtilities(hyperplaneList, pointList, unbiasedStoryVector.hyperPlaneEquation,
+        #                                inputStoryVector=storyPointList, ci=ci)
+        #
+        # print("Finished Getting Lines with Utilities No2")
 
         hyperplaneList.sort(key=lambda pair: pair.l2Norm)
         print("Finished Sorting Lines.")
@@ -110,25 +132,8 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
 
         # Print the original graph.
         if pointDimension == 2:
-            fig = plt.figure()
-            plt.scatter(*zip(*pointList))
-
-            defenderPlotLineX = [-1, 1]
-            adversaryPlotLineX = [-1, 1]
-            defenderHyperplaneEquation = hyperplaneList[0].hyperPlaneEquation
-            adversaryHyperplaneEquation = adversaryHyperplane.hyperPlaneEquation
-            defenderPlotLineY = [defenderHyperplaneEquation[0]/defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
-                2]/defenderHyperplaneEquation[1], -defenderHyperplaneEquation[0]/defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
-                2]/defenderHyperplaneEquation[1]]
-            adversaryPlotLineY = [adversaryHyperplaneEquation[0]/adversaryHyperplaneEquation[1] - adversaryHyperplaneEquation[
-                2]/adversaryHyperplaneEquation[1], -adversaryHyperplaneEquation[0]/adversaryHyperplaneEquation[1] - adversaryHyperplaneEquation[
-                2]/adversaryHyperplaneEquation[1]]
-
-            plt.plot(defenderPlotLineX, defenderPlotLineY)
-            plt.plot(adversaryPlotLineX, adversaryPlotLineY)
-
-            plt.savefig(os.path.join(plotOutputDirectory, "figure1.png"))
-            plt.close(fig)
+            plotDefAdvHyperplane(pointList, hyperplaneList[0].hyperPlaneEquation,
+                                 adversaryHyperplane.hyperPlaneEquation, plotOutputDirectory, "figure3.png")
 
         # Now iterate the hyperplane list and try to move points.
         for i in range(len(hyperplaneList)):
@@ -176,51 +181,14 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
                 # print(hyperplaneList[-1].l2Norm)
 
                 if pointDimension == 2:
-                    fig = plt.figure()
-                    plt.scatter(*zip(*pointList))
-                    defenderPlotLineX = [-1, 1]
-                    adversaryPlotLineX = [-1, 1]
-                    defenderHyperplaneEquation = defenderHyperplane.hyperPlaneEquation
-                    adversaryHyperplaneEquation = adversaryHyperplane.hyperPlaneEquation
-                    defenderPlotLineY = [
-                        defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
-                            2] / defenderHyperplaneEquation[1],
-                        -defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
-                            2] / defenderHyperplaneEquation[1]]
-                    adversaryPlotLineY = [
-                        adversaryHyperplaneEquation[0] / adversaryHyperplaneEquation[1] - adversaryHyperplaneEquation[
-                            2] / adversaryHyperplaneEquation[1],
-                        -adversaryHyperplaneEquation[0] / adversaryHyperplaneEquation[1] - adversaryHyperplaneEquation[
-                            2] / adversaryHyperplaneEquation[1]]
-                    plt.plot(defenderPlotLineX, defenderPlotLineY)
-                    plt.plot(adversaryPlotLineX, adversaryPlotLineY)
-                    plt.savefig(os.path.join(plotOutputDirectory, "figure2.png"))
-                    plt.close(fig)
+                    plotDefAdvHyperplane(pointList, defenderHyperplane.hyperPlaneEquation,
+                                         adversaryHyperplane.hyperPlaneEquation, plotOutputDirectory, "figure4.png")
 
                 pointList = movedPointList
 
                 if pointDimension == 2:
-                    fig = plt.figure()
-                    plt.scatter(*zip(*pointList))
-                    defenderPlotLineX = [-1, 1]
-                    adversaryPlotLineX = [-1, 1]
-                    defenderHyperplaneEquation = defenderHyperplane.hyperPlaneEquation
-                    adversaryHyperplaneEquation = adversaryHyperplane.hyperPlaneEquation
-                    defenderPlotLineY = [
-                        defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
-                            2] / defenderHyperplaneEquation[1],
-                        -defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
-                            2] / defenderHyperplaneEquation[1]]
-                    adversaryPlotLineY = [
-                        adversaryHyperplaneEquation[0] / adversaryHyperplaneEquation[1] - adversaryHyperplaneEquation[
-                            2] / adversaryHyperplaneEquation[1],
-                        -adversaryHyperplaneEquation[0] / adversaryHyperplaneEquation[1] - adversaryHyperplaneEquation[
-                            2] / adversaryHyperplaneEquation[1]]
-
-                    plt.plot(defenderPlotLineX, defenderPlotLineY)
-                    plt.plot(adversaryPlotLineX, adversaryPlotLineY)
-                    plt.savefig(os.path.join(plotOutputDirectory, "figure3.png"))
-                    plt.close(fig)
+                    plotDefAdvHyperplane(pointList, defenderHyperplane.hyperPlaneEquation,
+                                         adversaryHyperplane.hyperPlaneEquation, plotOutputDirectory, "figure5.png")
                 break
 
         plt.show()
@@ -255,10 +223,62 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
 
     return True, (functionEndTime - functionStartTime)
 
+def plotDefAdvHyperplane(pointList, defenderHyperplaneEquation, adversaryHyperplaneEquation, plotOutputDirectory, plotFileName):
+    """Attension: Only works in two dimension..."""
+    if not pointList:
+        if len(pointList[0]) != 2:
+            return
+
+    fig = plt.figure()
+    plt.scatter(*zip(*pointList))
+    defenderPlotLineX = [-1, 1]
+    adversaryPlotLineX = [-1, 1]
+
+    defenderPlotLineY = [defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
+        2] / defenderHyperplaneEquation[1], -defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] -
+                         defenderHyperplaneEquation[
+                             2] / defenderHyperplaneEquation[1]]
+    adversaryPlotLineY = [
+        adversaryHyperplaneEquation[0] / adversaryHyperplaneEquation[1] - adversaryHyperplaneEquation[
+            2] / adversaryHyperplaneEquation[1],
+        -adversaryHyperplaneEquation[0] / adversaryHyperplaneEquation[1] - adversaryHyperplaneEquation[
+            2] / adversaryHyperplaneEquation[1]]
+    plt.plot(defenderPlotLineX, defenderPlotLineY)
+    plt.plot(adversaryPlotLineX, adversaryPlotLineY)
+    plt.savefig(os.path.join(plotOutputDirectory, plotFileName))
+    plt.close(fig)
+
+    return
+
+def plotHyperplaneList(pointList, hyperplaneList, plotOutputDirectory, plotFileName):
+    """Attension: Only works in two dimension..."""
+    if not pointList:
+        if len(pointList[0]) != 2:
+            return
+
+    fig = plt.figure()
+    plt.scatter(*zip(*pointList))
+    plotLineListX = []
+    plotLineListY = []
+    for hyperplane in hyperplaneList:
+        hyperplaneEquation = hyperplane.hyperPlaneEquation
+        plotLineListX.append([-1,1])
+        plotLineListY.append([hyperplaneEquation[0] / hyperplaneEquation[1] - hyperplaneEquation[
+        2] / hyperplaneEquation[1], -hyperplaneEquation[0] / hyperplaneEquation[1] -
+                         hyperplaneEquation[
+                             2] / hyperplaneEquation[1]])
+
+    for i in range(len(plotLineListX)):
+        plt.plot(plotLineListX[i],plotLineListY[i])
+    plt.savefig(os.path.join(plotOutputDirectory, plotFileName))
+    plt.close(fig)
+
+    return
+
 # Run
 
-dimensionList = [2]#,3,4,5]
-pointNumList = [50]#, 30, 40, 50, 70, 90]#, 100]# , 120, 150]#, 500, 700, 900, 1000]
+dimensionList = [2,3,4]#,3,4,5]
+pointNumList = [20,50,80, 100]#, 30, 40, 50, 70, 90]#, 100]# , 120, 150]#, 500, 700, 900, 1000]
 dimensionRunTimeList = []
 pointNumRunTimeList = []
 
@@ -266,26 +286,27 @@ outputDirectory = sys.argv[1]
 if not os.path.isdir(outputDirectory):
     raise Exception("Output Directory not accessible.")
 
-# for dimemsion in dimensionList:
-#     isSucceed = False
-#     runtimeList = []
-#     while not isSucceed or len(runtimeList) <= 3:
-#         isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=dimemsion, numOfPoint=
-#     20)
-#         if isSucceed:
-#             runtimeList.append(runtime)
-#     dimensionRunTimeList.append(sum(runtimeList)/len(runtimeList))
+for dimemsion in dimensionList:
+    # isSucceed = False
+    runtimeList = []
+    # while not isSucceed or len(runtimeList) <= 3:
+    while len(runtimeList) <= 3:
+        isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=dimemsion, numOfPoint=
+    20, runCount=len(runtimeList))
+        # if isSucceed:
+        runtimeList.append(runtime)
+    dimensionRunTimeList.append(sum(runtimeList)/len(runtimeList))
 
-# for pointNum in pointNumList:
-#     isSucceed = False
-#     runtimeList = []
-#     while not isSucceed or len(runtimeList) <= 10:
-#
-#         isSucceed, runtime = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2, numOfPoint=pointNum,
-#                                            runCount=len(runtimeList))
-#         if isSucceed:
-#             runtimeList.append(runtime)
-#     pointNumRunTimeList.append(sum(runtimeList)/len(runtimeList))
+for pointNum in pointNumList:
+    # isSucceed = False
+    runtimeList = []
+    # while not isSucceed or len(runtimeList) <= 10:
+    while len(runtimeList) <= 3:
+        isSucceed, runtime = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2, numOfPoint=pointNum,
+                                           runCount=len(runtimeList))
+        # if isSucceed:
+        runtimeList.append(runtime)
+    pointNumRunTimeList.append(sum(runtimeList)/len(runtimeList))
 
 # # For Debug Purpose:::::::###########
 # for pointNum in pointNumList:
@@ -298,15 +319,15 @@ if not os.path.isdir(outputDirectory):
 #         runtimeList.append(runtime)
 #     pointNumRunTimeList.append(sum(runtimeList)/len(runtimeList))
 
-# fig = plt.figure()
-# plt.plot( dimensionList , dimensionRunTimeList)
-# plt.savefig(os.path.join(outputDirectory, "Dimension_VS_Runtime.png"))
-# plt.close(fig)
+fig = plt.figure()
+plt.plot( dimensionList , dimensionRunTimeList)
+plt.savefig(os.path.join(outputDirectory, "Dimension_VS_Runtime.png"))
+plt.close(fig)
 
-# fig = plt.figure()
-# plt.plot( pointNumList , pointNumRunTimeList)
-# plt.savefig(os.path.join(outputDirectory, "PointNum_VS_Runtime.png"))
-# plt.close(fig)
+fig = plt.figure()
+plt.plot( pointNumList , pointNumRunTimeList)
+plt.savefig(os.path.join(outputDirectory, "PointNum_VS_Runtime.png"))
+plt.close(fig)
 
-isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=2, numOfPoint=
-    20)
+# isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=2, numOfPoint=
+#     20)
