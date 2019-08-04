@@ -3,7 +3,7 @@ import sys
 from DataStructure import *
 from Multi_Dimension import *
 
-k = 4
+k = 20
 e = 0.1
 ci = 1
 
@@ -52,12 +52,12 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorL
     my_rows.append([my_colnames[:-1], len(storyVectorList)*[1]]) #sum(aj) <= k
     my_rhs.append(k)
 
-    print(my_rows)
-    print(my_rhs)
-    print(my_sense)
-    print(my_colnames)
-    print(my_rownames)
-    sys.stdout.flush()
+    # print(my_rows)
+    # print(my_rhs)
+    # print(my_sense)
+    # print(my_colnames)
+    # print(my_rownames)
+    # sys.stdout.flush()
 
     my_prob.linear_constraints.add(lin_expr=my_rows, senses=my_sense, rhs=my_rhs, names=my_rownames)
 
@@ -101,4 +101,4 @@ def testHyperPlaneConversion():
 
     hyperPlaneConversion(hyperplaneList[0], pointList, storyVectorList)
 
-testHyperPlaneConversion()
+# testHyperPlaneConversion()

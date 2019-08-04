@@ -82,7 +82,8 @@ def getHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], inputPoint
 
         # L2 Norm:
         norm = 0
-        for k in range(len(inputHyperPlaneList[i].hyperPlaneEquation)-1): # Don't count the constant variable?
+        for k in range(len(inputHyperPlaneList[i].hyperPlaneEquation)-1): # Don't count the constant variable???  Not
+            # counting now.
             norm += (inputHyperPlaneList[i].hyperPlaneEquation[k]/inputHyperPlaneList[i].hyperPlaneEquation[1] -
             unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
         norm = math.sqrt(norm)

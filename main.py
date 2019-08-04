@@ -32,6 +32,8 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
     iter = 0
     ci = 1
     numOfIteration = []
+    adversaryMaximumPoint = 0
+    # movedPointList = []
 
     epsilon = 0.001 # Use for determine the minimum l2norm change.
 
@@ -87,6 +89,11 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
 
         print("Finished converting hyperplanes.")
 
+        # After regenerating the hyperplane. Needs to recalculate the L2Norm.
+        getHyperplaneListWithUtilities(hyperplaneList, pointList, unbiasedStoryVector.hyperPlaneEquation,
+                                       inputStoryVector=storyPointList, ci=ci)
+
+        print("Finished Getting Lines with Utilities No2")
 
         hyperplaneList.sort(key=lambda pair: pair.l2Norm)
         print("Finished Sorting Lines.")
@@ -223,6 +230,12 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
 
         print("Current smallestL2Norm is " + str(smallestL2Norm) + ".\n\n\n")
 
+        functionEndTime = timeit.default_timer()
+
+        #TODO: Will cause bugs. NOT sure why.
+        # if movedPointList == originalPointList:
+        #     return False, (functionEndTime - functionStartTime)
+
         iter += 1
         numOfIteration.append(iter)
         smallestL2NormList.append(smallestL2Norm)
@@ -239,9 +252,6 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
     plt.plot(numOfIteration, adversaryMaximumPointList)
     plt.savefig(os.path.join(outputDirectory, "Iter_VS_Adv.png"))
     plt.close(fig)
-
-    if movedPointList == originalPointList:
-        return False, (functionEndTime - functionStartTime)
 
     return True, (functionEndTime - functionStartTime)
 
