@@ -11,6 +11,7 @@ plt.switch_backend('agg')
 def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smallestNormThreshold = 0.1, runCount = 0) -> (
         bool, int):
     """Parameter input: Output parameter. Return run time."""
+    # Already changed to storyVector hyperplane calculation.
 
     functionStartTime = timeit.default_timer()
     outputDirectory = os.path.join(outputDirectory, str(pointDimension)+"D"+str(numOfPoint)+"P")

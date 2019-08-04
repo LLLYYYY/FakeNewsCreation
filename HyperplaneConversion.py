@@ -7,8 +7,6 @@ k = 4
 e = 0.1
 ci = 1
 
-
-
 def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorList):
 
     my_prob = cplex.Cplex()
