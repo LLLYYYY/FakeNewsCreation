@@ -6,6 +6,7 @@ from itertools import combinations
 import sys
 import os
 import timeit
+from cplex.exceptions.errors import *
 plt.switch_backend('agg')
 
 def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smallestNormThreshold = 0.1, runCount = 0) -> (
@@ -87,12 +88,18 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
                 convertedHyperplane = hyperPlaneConversion(hyperplane, pointList, storyPointList)
                 convertedHyperplaneList.append(convertedHyperplane)
                 originalConvertedHyperplaneMatchList.append([hyperplane, convertedHyperplane])
-            except:
-                print("\n\n\n\n\n\n\n\nFailed to generated hyperplane.\n\n\n\n\n\n\n\n\n")
+            except CplexSolverError:
+                print("\n\n\n\n\n\n\n\n Failed to generated hyperplane. \n\n\n\n\n\n\n\n\n")
                 continue
 
         print("Finished converting hyperplanes.  The size of the convert hyperplanelist is:" + str(len(
-            convertedHyperplaneList))+ ".")
+            convertedHyperplaneList)) + ".")
+
+        hyperplaneList = convertedHyperplaneList
+
+        getHyperplaneListWithUtilities(hyperplaneList, pointList, unbiasedStoryVector.hyperPlaneEquation,
+                                       inputStoryVector=storyPointList, ci=ci)
+        print("Finished Getting Lines with Utilities No2.")
 
 
         # Now plot the original and converted hyperplane.
@@ -106,11 +113,9 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
             plotOriginalHyperplaneList.append(matchedHyperplane[0])
             plotConvertedHyperplaneList.append(matchedHyperplane[1])
         plotHyperplaneList(pointList, plotOriginalHyperplaneList, plotOutputDirectory, "figure1.png")
-        plotHyperplaneList(pointList, plotOriginalHyperplaneList, plotOutputDirectory, "figure2.png")
+        plotHyperplaneList(pointList, plotConvertedHyperplaneList, plotOutputDirectory, "figure2.png")
 
         print("Finished printing the original and converted hyperplane charts.")
-
-        hyperplaneList = convertedHyperplaneList
 
         # # After regenerating the hyperplane. Needs to recalculate the L2Norm.
         # getHyperplaneListWithUtilities(hyperplaneList, pointList, unbiasedStoryVector.hyperPlaneEquation,

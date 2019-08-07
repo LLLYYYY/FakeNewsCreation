@@ -2,11 +2,12 @@ import cplex
 import sys
 from DataStructure import *
 from Multi_Dimension import *
+from cplex.exceptions.errors import *
 
 k = 30
-e = 0.0001
-ci = 1
-M = 1000
+e = 0.001
+ci = 2
+M = 10000
 
 def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorList):
 
@@ -24,7 +25,7 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorL
     my_colnames = ["a" + str(j) for j in range(len(storyVectorList))]
     # my_colnames.append("alpha")
 
-    my_prob.variables.add(obj=my_obj, ub=my_upperbound, lb = my_lowerbound, names=my_colnames)
+    my_prob.variables.add(obj=my_obj, ub=my_upperbound, lb=my_lowerbound, names=my_colnames)
 
     my_rownames = ["r" + str(i) for i in range(2 * len(pointList) + 1)]
     my_sense = len(pointList) * "GL"
@@ -33,7 +34,7 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorL
     my_rhs = []
 
     for i in range(len(pointList)):
-        #Changed the M.
+        #Changed the M to a very large number.
         rhs = [(ci - M * (1 - consumerHyperplane.pointSubscription[i])), (ci - e + M *
                                                                           consumerHyperplane.pointSubscription[i])]
         my_rhs += rhs
@@ -57,38 +58,50 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, pointList, storyVectorL
     sys.stdout.flush()
 
     my_prob.linear_constraints.add(lin_expr=my_rows, senses=my_sense, rhs=my_rhs, names=my_rownames)
+    #for i in range(len(my_colnames)):
+    #    my_prob.variables.set_types( i , my_prob.variables.type.binary)
 
     my_prob.write("/Users/sly/Downloads/FakeNewsOutput/file.lp")
 
     my_prob.solve()
+
+    if my_prob.solution.get_status() is not 1:
+        raise CplexSolverError("No Solution exists.")
+    print(my_prob.get_stats())
+
     numcols = my_prob.variables.get_num()
     x = my_prob.solution.get_values()
+    isAllZeros = True
     for j in range(numcols):
-        print("Column %d:  Value = %10f" %(j, x[j]))
-
+        print("Column %s %d:  Value = %10f" %(my_colnames[j], j, x[j]))
+        if x[j] != 0:
+            isAllZeros = False
+    if isAllZeros:
+        print("Outputs all zeros. Error. No solution exists.")
+        raise CplexSolverError("Outputs all zeros. Error. No solution exists.")
 
     endpoint = [0,0]
     for j in range(numcols): #Ignored alpha
         temp = [x[j] * storyVectorList[j][l] for l in range(len(storyVectorList[j]))]
         temp = [temp[l] / k for l in range(len(temp))]
-        endpoint = [l+p for l,p in zip(temp,endpoint)]
+        endpoint = [l+p for l,p in zip(temp, endpoint)]
     print("Endpoint is: " + str(endpoint))
 
     # generatedHyperplane = getHyperplaneEquation([endpoint, len(pointList[0])*[-0.001]])
-    generatedHyperplane = Hyperplane(endpoint, []) #ignored alpha.
+    generatedHyperplane = Hyperplane(endpoint+[0], []) #ignored alpha. Alpha becommes 0.
 
     getHyperplaneListWithUtilities([generatedHyperplane], pointList, getMeanHyperplane(pointList).hyperPlaneEquation,
                                     storyVectorList, ci)
     print(generatedHyperplane.hyperPlaneEquation)
-    print("Generated Hyperplane's points subscription:" + str(generatedHyperplane.pointSubscription))
+    print("Generated Hyperplane's points subscription:" + str(generatedHyperplane.pointSubscription) + "\n\n\n\n")
 
     return generatedHyperplane
 
 
 def testHyperPlaneConversion():
-    pointList = [[1,1], [1,3], [3,1], [4,4.1]]
-    storyVectorList = [[1,1], [1,2], [2,1], [4,4.1]]
-    hyperplane = getHyperplaneEquation([[1, 3],[4, 4.1]])
+    pointList = [[1, 1.1], [1,3], [3,1], [4,4]]
+    storyVectorList = [[1, 1.1], [1,2], [2,1], [4,4.1]]
+    hyperplane = getHyperplaneEquation([[1,2],[4, 4]])
     hyperplaneList = [hyperplane]
 
     getHyperplaneListWithUtilities(hyperplaneList,pointList, getMeanHyperplane(pointList).hyperPlaneEquation,
@@ -96,7 +109,9 @@ def testHyperPlaneConversion():
 
     print(hyperplane.hyperPlaneEquation)
     print(hyperplaneList[0].pointSubscription)
-
-    hyperPlaneConversion(hyperplaneList[0], pointList, storyVectorList)
+    try:
+        convertedHyperplane = hyperPlaneConversion(hyperplane, pointList, storyVectorList)
+    except CplexSolverError:
+        print("Failed to generate.")
 
 # testHyperPlaneConversion()

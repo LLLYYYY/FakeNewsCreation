@@ -84,6 +84,7 @@ def getHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], inputPoint
         norm = 0
         for k in range(len(inputHyperPlaneList[i].hyperPlaneEquation)-1): # Don't count the constant variable???  Not
             # counting now.
+            #TODO: It is possible that hyperplaneequation[1] == 0. It will crush.
             norm += (inputHyperPlaneList[i].hyperPlaneEquation[k]/inputHyperPlaneList[i].hyperPlaneEquation[1] -
             unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
         norm = math.sqrt(norm)
@@ -274,9 +275,9 @@ def countPointsOfHyperplane(inputHyperplane:Hyperplane, inputPointList, ci):
         # elif inputPointList[i] == inputHyperplane.pointList[1]:  # At least two points
         #     lowerPointNumber += 1
         # elif n > 0:
-        if n > -0.0001:
+        if n > 0:  #TODO: Behavior unknown.
             upperPointNumber += 1
-        elif n < 0.0001:
+        elif n < 0:
             lowerPointNumber += 1
         else:
             onLinePointNumber += 1
@@ -291,10 +292,9 @@ def countPointsOfHyperplane(inputHyperplane:Hyperplane, inputPointList, ci):
         n = []
         for j in range(len(inputPoint)):
             n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
-        n.append(inputHyperplane.hyperPlaneEquation[-1])
+        n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
         n = sum(n)
-        # if n >= ci:
-        if n >= 0:
+        if n >= ci:
             pointSubscribed = 1
             M += 1
             # print("News Subscribed, point" + str(inputPoint) + " Hyperplane:" + str(
