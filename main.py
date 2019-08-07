@@ -12,7 +12,7 @@ plt.switch_backend('agg')
 def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smallestNormThreshold = 0.1, runCount = 0) -> (
         bool, int):
     """Parameter input: Output parameter. Return run time."""
-    # Already changed to storyVector hyperplane calculation.
+    #Already changed to storyVector hyperplane calculation.
 
     functionStartTime = timeit.default_timer()
     outputDirectory = os.path.join(outputDirectory, str(pointDimension)+"D"+str(numOfPoint)+"P")
@@ -44,8 +44,7 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
     originalPointList = pointList
 
     for i in range(storyVectorNumber):
-        n = [ 2*x-1 for x in np.random.ranf(pointDimension).tolist()]
-        storyPointList.append(n)
+        storyPointList.append([ 2*x-1 for x in np.random.ranf(pointDimension).tolist()])
     unbiasedStoryVector = getMeanHyperplane(storyPointList)
 
     while len(smallestL2NormList) <= 1 or ( len(smallestL2NormList) > 1 and abs(smallestL2NormList[-1] -
@@ -57,16 +56,6 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
         if not os.path.isdir(plotOutputDirectory):
             os.mkdir(plotOutputDirectory)
 
-        # Implemented in the outer loop. Not necessary here.
-        #if (len(smallestL2NormList) > 4) and (abs(smallestL2NormList[-1] - smallestL2NormList[-2]) < 0.001 or \
-        #        smallestL2NormList[-1] - smallestL2NormList[-2] >= 0):  #
-        #    # Prevent Deadloop.
-        #    print("Fail to go further.\n\n\n\n\n\n\n\n\n")
-
-        #    functionEndTime = timeit.default_timer()
-        #    return False, (functionEndTime - functionStartTime)
-
-
         iterRange = [i for i in range(numOfPoint)]
         allComb = combinations(iterRange, pointDimension)
         for comb in allComb:
@@ -74,7 +63,6 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
             for i in comb:
                 pointListForHyperplane.append(pointList[i])
             hyperplaneList.append(getHyperplaneEquation(pointListForHyperplane))
-
         print("Finished getting hyperplane list. The size of the list is " + str(len(hyperplaneList)) + ".")
 
         getHyperplaneListWithUtilities(hyperplaneList, pointList, unbiasedStoryVector.hyperPlaneEquation,
