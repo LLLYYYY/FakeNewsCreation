@@ -91,7 +91,7 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, v, x):
                   "values do not match")
         #print(generatedHyperplane.hyperPlaneEquation)
         #print("Generated Hyperplane's points subscription:" + str(generatedHyperplane.pointSubscription) + "\n\n\n\n")
-
+    #TODO: It is possible to return an empty list. Needs to check the generated hyperplane before returning.
     return generatedHyperplane
 
 
@@ -111,4 +111,4 @@ def testHyperPlaneConversion():
     except CplexSolverError:
         print("Failed to generate.")
 
-testHyperPlaneConversion()
+# testHyperPlaneConversion()

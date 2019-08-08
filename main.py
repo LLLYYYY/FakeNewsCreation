@@ -31,13 +31,13 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
     smallestL2NormList = []
     adversaryMaximumPointList = []
     iter = 0
-    ci = 1
+    ci = 2 #TODO: ci is not same across files. Double check for all other variables as well
     numOfIteration = []
     adversaryMaximumPoint = 0
     originalConvertedHyperplaneMatchList = []
     # movedPointList = []
 
-    epsilon = 0.001 # Use for determine the minimum l2norm change.
+    epsilon = 0.01 # Use for determine the minimum l2norm change.
 
     for i in range(numOfPoint):
         pointList.append([ 2*x-1 for x in np.random.ranf(pointDimension).tolist()])
@@ -85,6 +85,9 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
 
         hyperplaneList = convertedHyperplaneList
 
+        #TODO: PLEASE CHECK m_i values match
+        #TODO: make sure to check mi and see if it is the same. Also, mi calculate should be bigger than ci not 0,
+        # with converted hyperplanes.
         getHyperplaneListWithUtilities(hyperplaneList, pointList, unbiasedStoryVector.hyperPlaneEquation,
                                        inputStoryVector=storyPointList, ci=ci)
         print("Finished Getting Lines with Utilities No2.")
@@ -114,6 +117,8 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
         hyperplaneList.sort(key=lambda pair: pair.l2Norm)
         print("Finished Sorting Lines.")
 
+
+        #TODO: Added adversary utilities. Should be M inside the hyperplane class. But decided by >= ci.
         #Find the best strategy for adversary.
         adversaryHyperplane = Hyperplane([], [])
         defenderHyperplane = Hyperplane([], [])
@@ -135,6 +140,7 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
                 print("The defender hyperplane and the adversary hyperplane matched. List number: " + str(i))
                 break
 
+            #TODO: FIX MOVE POINTS.
             isSucceed, movedPointList, defenderMaximumPoint, adversaryMaximumPoint = movePoints(hyperplaneList[i],
                                                                                                      adversaryHyperplane,
 
@@ -158,7 +164,7 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
             if isSucceed == False:
                 continue
             else:
-
+                #TODO: REMOVE THIS, RAISE AN ERROR
                 if movedPointList == pointList:
                     print("Points not moving.")
                     continue
@@ -202,6 +208,7 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
         numOfIteration.append(iter)
         smallestL2NormList.append(smallestL2Norm)
         adversaryMaximumPointList.append(adversaryMaximumPoint)
+        #end outer while
 
     functionEndTime = timeit.default_timer()
 

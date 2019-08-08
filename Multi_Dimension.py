@@ -73,6 +73,7 @@ def getHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], inputPoint
     """
 
     for i in range(len(inputHyperPlaneList)):
+        #TODO: REFACTOR CODE. REMOVE UNNECCESARY VARIABLES
         inputHyperPlaneList[i].maximumPointNumber, \
         inputHyperPlaneList[
             i].upperPointNumber, inputHyperPlaneList[i].lowerPointNumber, inputHyperPlaneList[i].onLinePointNumber, \
