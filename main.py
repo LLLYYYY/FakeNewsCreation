@@ -76,8 +76,9 @@ def mainAlgorithm(outputDirectory, pointDimension = 2, numOfPoint = 150, smalles
                 convertedHyperplane = hyperPlaneConversion(hyperplane, pointList, storyPointList)
                 convertedHyperplaneList.append(convertedHyperplane)
                 originalConvertedHyperplaneMatchList.append([hyperplane, convertedHyperplane])
-            except CplexSolverError:
-                print("\n\n\n\n\n\n\n\n Failed to generated hyperplane. \n\n\n\n\n\n\n\n\n")
+            except CplexSolverError as e:
+                print("\n\n\n\n\n\n\n\n Failed to generated hyperplane.")
+                print("Error message: " + str(e))
                 continue
 
         print("Finished converting hyperplanes.  The size of the convert hyperplanelist is:" + str(len(

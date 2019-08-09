@@ -191,7 +191,7 @@ def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, i
     #
     #         if n > 0  and  distance <= 0.2:
     #             # Adversary strategy. Upper has more. Move upper points to lower place.
-    #             movedPoint = [x - y for x, y in zip(point, getOrthogonalUnitVector(
+    #             movedPoint = [xList - y for xList, y in zip(point, getOrthogonalUnitVector(
     #                 adversaryHyperplane))]
     #             if isTwoPointsOnTheSameSideOfHyperplane(movedPoint, point, defenderHyperplane): #Check if moved points hurts defender
     #                 # utility.
@@ -215,7 +215,7 @@ def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, i
     #
     #         if n < 0 and distance <= 0.2:
     #             # Adversary strategy. Lower has more. Move lower points to upper place.
-    #             movedPoint = [x + y for x, y in
+    #             movedPoint = [xList + y for xList, y in
     #                           zip(point, getOrthogonalUnitVector(adversaryHyperplane))]
     #             if isTwoPointsOnTheSameSideOfHyperplane(movedPoint, point, defenderHyperplane):  #Check if moved points hurts defender
     #                 # utility.
