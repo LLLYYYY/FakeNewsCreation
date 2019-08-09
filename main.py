@@ -10,7 +10,7 @@ import timeit
 from cplex.exceptions.errors import *
 plt.switch_backend('agg')
 
-def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfStoryVectors, runCount = 0) -> (
+def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfStoryVectors, ci, runCount = 0) -> (
         bool, int):
     """Parameter input: Output parameter. Return run time."""
     #Already changed to storyVector hyperplane calculation.
@@ -67,16 +67,15 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
             hyperplaneList.append(getHyperplaneEquation(pointListUsedToGenerateHyperplane))
         print("Finished getting hyperplane list. The size of the list is " + str(len(hyperplaneList)) + ".")
 
-        getHyperplaneListWithUtilities(hyperplaneList, consumerPointList, unbiasedStoryHyperplane.hyperPlaneEquation,
-                                       inputStoryVector=storyVectorList, ci = ci)
+        hyperplaneList = getOriginalHyperplaneListWithUtilities(hyperplaneList, consumerPointList,
+                                                unbiasedStoryHyperplane.hyperPlaneEquation,
+                                               inputStoryVector=storyVectorList, ci = ci)
 
         print("Finished Getting Lines with Utilities")
 
-        convertedHyperplaneList = []
         for hyperplane in hyperplaneList:
             try:
                 convertedHyperplane = hyperPlaneConversion(hyperplane, consumerPointList, storyVectorList)
-                convertedHyperplaneList.append(convertedHyperplane)
                 originalConvertedHyperplaneMatchList.append([hyperplane, convertedHyperplane])
             except CplexSolverError as e:
                 print("\n\n\n\n\n\n\n\n Failed to generated hyperplane.")
@@ -84,16 +83,16 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 continue
 
         print("Finished converting hyperplanes.  The size of the convert hyperplanelist is:" + str(len(
-            convertedHyperplaneList)) + ".")
+            originalConvertedHyperplaneMatchList)) + ".")
 
-        hyperplaneList = convertedHyperplaneList
 
-        #TODO: PLEASE CHECK m_i values match
-        #TODO: make sure to check mi and see if it is the same. Also, mi calculate should be bigger than ci not 0,
-        # with converted hyperplanes.
-        getHyperplaneListWithUtilities(hyperplaneList, consumerPointList, unbiasedStoryHyperplane.hyperPlaneEquation,
-                                       inputStoryVector=storyVectorList, ci=ci)
-        print("Finished Getting Lines with Utilities No2.")
+        #The function will make sure mi is the same. Also, mi calculate is bigger than ci
+        # not 0,
+        hyperplaneList = getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList,
+                                                                 consumerPointList, unbiasedStoryHyperplane, ci)
+        print("Finished generating converted hyperplane with utilities.")
+
+
 
 
         # Now plot the original and converted hyperplane.
@@ -121,7 +120,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         print("Finished Sorting Lines.")
 
 
-        #TODO: Added adversary utilities. Should be M inside the hyperplane class. But decided by >= ci.
+        #TODO: Added adversary utilities. Should be adversaryUtility inside the hyperplane class. But decided by >= ci.
         #Find the best strategy for adversary.
         adversaryHyperplane = Hyperplane([], [])
         defenderHyperplane = Hyperplane([], [])
@@ -178,9 +177,9 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 defenderHyperplane = hyperplaneList[i]
 
                 # # For Debug purpose.
-                # print(hyperplaneList[0].l2Norm,  hyperplaneList[1].l2Norm, hyperplaneList[2].l2Norm)
-                # print(hyperplaneList[i].l2Norm)
-                # print(hyperplaneList[-1].l2Norm)
+                # print(hyperplaneList[0].defenderUtility,  hyperplaneList[1].defenderUtility, hyperplaneList[2].defenderUtility)
+                # print(hyperplaneList[i].defenderUtility)
+                # print(hyperplaneList[-1].defenderUtility)
 
                 if pointDimension == 2:
                     plotDefAdvHyperplane(consumerPointList, defenderHyperplane.hyperPlaneEquation,
@@ -196,7 +195,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         plt.show()
         print("Finished Printing Charts.")
 
-        smallestL2Norm = defenderHyperplane.l2Norm
+        smallestL2Norm = defenderHyperplane.defenderUtility
 
         print("Current minimum defender utility is " + str(smallestL2Norm) + ".\n\n\n")
 
@@ -294,7 +293,8 @@ for dimemsion in dimensionList:
     # while not isSucceed or len(runtimeList) <= 3:
     while len(runtimeList) <= 3:
         isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=dimemsion,
-                                           numOfComsumerPoints=20, numberOfStoryVectors=50, runCount=len(runtimeList))
+                                           numOfComsumerPoints=20, numberOfStoryVectors=50, ci = ci, runCount=len(
+            runtimeList))
         # if isSucceed:
         runtimeList.append(runtime)
     dimensionRunTimeList.append(sum(runtimeList)/len(runtimeList))
@@ -305,7 +305,7 @@ for pointNum in consumerTotalPointNumberList:
     # while not isSucceed or len(runtimeList) <= 10:
     while len(runtimeList) <= 3:
         isSucceed, runtime = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2, numOfComsumerPoints
-        =pointNum, numberOfStoryVectors= 50,
+        =pointNum, numberOfStoryVectors= 50, ci=ci,
                                            runCount=len(runtimeList))
         # if isSucceed:
         runtimeList.append(runtime)

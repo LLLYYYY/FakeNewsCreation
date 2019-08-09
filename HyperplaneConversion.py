@@ -36,7 +36,7 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
     my_rhs = []
 
     for i in range(len(vList)):
-        #Changed the M to a very large number.
+        #Changed the adversaryUtility to a very large number.
         rhs = [(ci - M * (1 - consumerHyperplane.pointSubscription[i])), (ci - e + M *
                                                                           consumerHyperplane.pointSubscription[i])]
         my_rhs += rhs
@@ -84,8 +84,8 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
 
         generatedHyperplane = Hyperplane(generatedhyperplaneDirection+[0], []) #ignored alpha. Alpha becommes 0.
 
-        getHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation,
-                                       xList, ci)
+        getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation,
+                                               xList, ci)
         if generatedHyperplane.pointSubscription != consumerHyperplane.pointSubscription:
             raise ValueError("Error in hyperplane conversion code. CPLEX returned a_j values without error, but still the m_i "
                   "values do not match")
@@ -102,8 +102,8 @@ def testHyperPlaneConversion():
     hyperplane = getHyperplaneEquation([[1,1.1],[4, 4]])
     hyperplaneList = [hyperplane]
 
-    getHyperplaneListWithUtilities(hyperplaneList,pointList, getMeanHyperplane(pointList).hyperPlaneEquation,
-                                   storyVectorList, ci)
+    getOriginalHyperplaneListWithUtilities(hyperplaneList, pointList, getMeanHyperplane(pointList).hyperPlaneEquation,
+                                           storyVectorList, ci)
 
     print(hyperplane.hyperPlaneEquation)
     print(hyperplaneList[0].pointSubscription)

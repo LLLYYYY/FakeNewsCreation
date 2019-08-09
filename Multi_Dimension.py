@@ -9,7 +9,7 @@ def getMeanHyperplane(inputStoryVectorList):
         This function is dimension free.
     """
     if not inputStoryVectorList:
-        raise ValueError("The inputPointList is empty. Please check the input point list.")
+        raise ValueError("The consumerPointList is empty. Please check the input point list.")
 
     meanPoint = []
     for i in range(len(inputStoryVectorList[0])):
@@ -19,7 +19,7 @@ def getMeanHyperplane(inputStoryVectorList):
         n /= len(inputStoryVectorList)
         meanPoint.append(n)
 
-    meanHyperplane = Hyperplane([*meanPoint, 0], [meanPoint, [-0.0001, -0.0001]])
+    meanHyperplane = Hyperplane([*meanPoint, 0])
     return meanHyperplane
 
 #TODO: HANDLE PARALLEL VECTORS IN HIGHER DIMENSIONS
@@ -50,8 +50,7 @@ def getHyperplaneEquation(pointList):
         devider = hyperplaneEauation[1]
         hyperplaneEauation = [x/devider for x in hyperplaneEauation]
 
-    outputHyperplaneEquation = Hyperplane(hyperPlaneEquation = hyperplaneEauation,
-                                          pointList= pointList)
+    outputHyperplaneEquation = Hyperplane(hyperPlaneEquation = hyperplaneEauation)
     return outputHyperplaneEquation
 
 def getOrthogonalUnitVector(inputHyperplane:Hyperplane):
@@ -65,7 +64,7 @@ def getOrthogonalUnitVector(inputHyperplane:Hyperplane):
     return orthogonalUnitVector
 
 
-def getHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], inputPointList, unbiasedVector, inputStoryVector, ci):
+def getOriginalHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], consumerPointList, unbiasedVector):
 
     """Return hyperPlane list with utilities.
         Dimension Free.
@@ -73,13 +72,10 @@ def getHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], inputPoint
     """
 
     for i in range(len(inputHyperPlaneList)):
-        #TODO: REFACTOR CODE. REMOVE UNNECCESARY VARIABLES
-        inputHyperPlaneList[i].maximumPointNumber, \
-        inputHyperPlaneList[
-            i].upperPointNumber, inputHyperPlaneList[i].lowerPointNumber, inputHyperPlaneList[i].onLinePointNumber, \
-        inputHyperPlaneList[i].pointSubscription, inputHyperPlaneList[i].M = \
-            countPointsOfHyperplane(
-            inputHyperPlaneList[i], inputPointList,  ci)
+
+        inputHyperPlaneList[i].pointSubscription, inputHyperPlaneList[i].adversaryUtility = \
+            countSubscribersOfHyperplane(
+            inputHyperPlaneList[i], consumerPointList, 0)
 
         # L2 Norm:
         norm = 0
@@ -90,7 +86,37 @@ def getHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], inputPoint
             unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
         norm = math.sqrt(norm)
 
-        inputHyperPlaneList[i].l2Norm = norm
+        inputHyperPlaneList[i].defenderUtility = norm
+    return inputHyperPlaneList
+
+def getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList: [[Hyperplane, Hyperplane]],
+                                            consumerPointList, unbiasedVector, ci):
+    """Dimension Free."""
+    originalHyperplaneList = [originalConvertedHyperplaneMatchList[i][0] for i in range(len(originalConvertedHyperplaneMatchList))]
+    convertedHyperplaneList = [originalConvertedHyperplaneMatchList[i][1] for i in range(len(
+        originalConvertedHyperplaneMatchList))]
+
+    for i in range(len(convertedHyperplaneList)):
+        convertedHyperplaneList[i].pointSubscription, convertedHyperplaneList[i].adversaryUtility = countSubscribersOfHyperplane(
+            convertedHyperplaneList[i], consumerPointList,  ci)
+
+        if convertedHyperplaneList[i].pointSubscription != originalHyperplaneList[i].pointSubscription:
+            raise ValueError("The converted hyperplane has different point subscription compare to the original.")
+
+        # L2 Norm:
+        norm = 0
+        for k in range(
+                len(convertedHyperplaneList[i].hyperPlaneEquation) - 1):  # Don't count the constant variable???  Not
+            # counting now.
+            # TODO: It is possible that hyperplaneequation[1] == 0. It will crush.
+            norm += (convertedHyperplaneList[i].hyperPlaneEquation[k] / convertedHyperplaneList[i].hyperPlaneEquation[1] -
+                     unbiasedVector[k] / unbiasedVector[
+                         1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
+        norm = math.sqrt(norm)
+        convertedHyperplaneList[i].defenderUtility = norm
+    return convertedHyperplaneList
+
+
 
 def twoPointsDistance (pointA, pointB):
     dimension = len(pointA)
@@ -228,17 +254,19 @@ def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, i
     # #     raise ValueError("Crash at movedPointList")
     # #     ##########################Haven't implemented!!!!!!!!!!!!!!!!!!
     finalMovedPointList = movedDefenderPointsList
-    # print(movedPointsList)
-    defenderMaximumPoints, _, _, _ , _, _ = countPointsOfHyperplane(defenderHyperplane, finalMovedPointList,
-                                                             ci= ci)
-    adversarymaximumPoints, _, _, _ , _, _ = countPointsOfHyperplane(adversaryHyperplane, finalMovedPointList, ci = ci)
 
-    if defenderMaximumPoints >= adversarymaximumPoints and defenderMaximumPoints > 0:
-        return True, finalMovedPointList, defenderMaximumPoints, adversarymaximumPoints
-    elif defenderMaximumPoints == 0:
-        raise Exception("Moved points failure. Bug!")
+    _, defenderTotalSubscriptionNumber = countSubscribersOfHyperplane(defenderHyperplane,
+                                                                                 finalMovedPointList,
+                                                                         ci= ci)
+    _, adversaryTotalSubscriptionNumber = countSubscribersOfHyperplane(adversaryHyperplane,
+                                                                               finalMovedPointList, ci = ci)
+
+    if defenderTotalSubscriptionNumber >= adversaryTotalSubscriptionNumber and defenderTotalSubscriptionNumber > 0:
+        return True, finalMovedPointList, defenderTotalSubscriptionNumber, adversaryTotalSubscriptionNumber
+    elif defenderTotalSubscriptionNumber == 0:
+        raise Exception("The defender total subscription number equals to 0. Bug!")
     else:
-        return False, [], defenderMaximumPoints, adversarymaximumPoints
+        return False, [], defenderTotalSubscriptionNumber, adversaryTotalSubscriptionNumber
 
 
 def isTwoPointsOnTheSameSideOfHyperplane(pointA, pointB, hyperplane:Hyperplane):
@@ -258,35 +286,10 @@ def isTwoPointsOnTheSameSideOfHyperplane(pointA, pointB, hyperplane:Hyperplane):
         # print("Point Moved.")
         return True
 
-def countPointsOfHyperplane(inputHyperplane:Hyperplane, inputPointList, ci):
+def countSubscribersOfHyperplane(inputHyperplane:Hyperplane, inputPointList, ci):  #Attension, when we don't need ci,
+    # set ci to be 0.
     pointSubscribedList = []
-    maximumPointNumber = 0
-    upperPointNumber = 0
-    lowerPointNumber = 0
-    onLinePointNumber = 0
-    M = 0
-    for i in range(len(inputPointList)):
-        dimension = len(inputPointList[0])
-        n = 0
-        for j in range(dimension):
-            n += inputHyperplane.hyperPlaneEquation[j] * inputPointList[i][j]
-        n += inputHyperplane.hyperPlaneEquation[dimension]  # Constant variables b.
-        # if inputPointList[i] == inputHyperplane.pointList[0]:
-        #     upperPointNumber += 1
-        # elif inputPointList[i] == inputHyperplane.pointList[1]:  # At least two points
-        #     lowerPointNumber += 1
-        # elif n > 0:
-        if n > 0:  #TODO: Behavior unknown.
-            upperPointNumber += 1
-        elif n < 0:
-            lowerPointNumber += 1
-        else:
-            onLinePointNumber += 1
-
-    if upperPointNumber > lowerPointNumber:
-        maximumPointNumber = upperPointNumber + onLinePointNumber
-    else:  # include upper == lower
-        maximumPointNumber = lowerPointNumber + onLinePointNumber
+    totalSubscribeNumber = 0
 
     for inputPoint in inputPointList:
         pointSubscribed = 0
@@ -295,30 +298,13 @@ def countPointsOfHyperplane(inputHyperplane:Hyperplane, inputPointList, ci):
             n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
         n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
         n = sum(n)
-        if n >= 0:
+        if n >= ci:
             pointSubscribed = 1
-            M += 1
-            # print("News Subscribed, point" + str(inputPoint) + " Hyperplane:" + str(
-            #     inputHyperplane.hyperPlaneEquation))
+            totalSubscribeNumber += 1
         else:
             pointSubscribed = 0
         pointSubscribedList.append(pointSubscribed)
-    return maximumPointNumber, upperPointNumber, lowerPointNumber, onLinePointNumber, pointSubscribedList, M,
-
-def newsSubscription(comsumerHyperplane:Hyperplane, inputPoint, ci):
-    pointSubscribed = 0
-    n = []
-    for j in range(len(inputPoint)):
-        n.append(comsumerHyperplane.hyperPlaneEquation[j] * inputPoint[j])
-    n.append(comsumerHyperplane.hyperPlaneEquation[-1])
-    n = sum(n)
-    if n>= ci:
-        pointSubscribed = 1
-        print("News Subscribed, point" + str(inputPoint) + " Hyperplane:" + str(
-            comsumerHyperplane.hyperPlaneEquation))
-    else:
-        pointSubscribed = 0
-    return pointSubscribed
+    return pointSubscribedList, totalSubscribeNumber
 
 ### Test
 
@@ -342,7 +328,7 @@ def testGetHyperplaneListWithUtilities():
     hyperPlaneList = [hyperPlaneA,hyperPlaneB]
     unbiasedPlane = [1,1,-5]
     pointList = [[1,1],[2,2],[3,3],[4,4],[5,5]]
-    getHyperplaneListWithUtilities(hyperPlaneList, pointList, unbiasedPlane)
+    getOriginalHyperplaneListWithUtilities(hyperPlaneList, pointList, unbiasedPlane)
     print(hyperPlaneList[1].maximumPointNumber)
 
 # testGetHyperplaneEquation()
