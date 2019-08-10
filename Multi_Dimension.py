@@ -128,7 +128,7 @@ def twoPointsDistance (pointA, pointB):
 
 
 
-
+#TODO: Move points not finished.
 def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, inputPointList, oringinalPointList, ci):
     """Try to move points so that the defender hyperplane can has more point counts than adversary hyperplane.
         If succeed, return True, finalMovedPointList, defenderMaximumPointNumber, adveraryMaximumPointNumber
@@ -137,66 +137,24 @@ def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, i
     movedDefenderPointsList = []
     finalMovedPointList = []
 
-    if defenderHyperplane.maximumPointNumber == defenderHyperplane.upperPointNumber + defenderHyperplane.onLinePointNumber: # Upper has more
-        for i in range(len(inputPointList)):
+    # Move points to benefits defender.
+    # Always move upward.
+    for i in range(len(inputPointList)):
 
-            n = 0
-            dimension = len(inputPointList[i])
-            b = 0 # Use for calculating point to hyperplane distance.
-            for j in range(dimension):
-                n += inputPointList[i][j] * defenderHyperplane.hyperPlaneEquation[j]
-                b += defenderHyperplane.hyperPlaneEquation[j] ** 2
+        # Defender strategy. Always move upward.
+        if defenderHyperplane.pointSubscription[i] == 0:
+            movedPoint = [x + y for x, y in zip(inputPointList[i], [singleTimeMovingDistance * z for z in getOrthogonalUnitVector(
+                defenderHyperplane)])]
+            distanceToOriginalPoints = twoPointsDistance(oringinalPointList[i], movedPoint)
 
-            n += defenderHyperplane.hyperPlaneEquation[dimension]
-            distance = (abs(n))/math.sqrt(b)
-
-            if n < 0  and  distance <= 0.2:
-                # Defender strategy. Upper has more. Move lower points to upper place.
-                movedPoint1 = [x + y for x, y in zip(inputPointList[i], [0.2 * z for z in getOrthogonalUnitVector(
-                    defenderHyperplane)])]
-                distanceToOriginalPoints1 = twoPointsDistance(oringinalPointList[i], movedPoint1)
-                movedPoint2 = [x + y for x, y in zip(inputPointList[i], [distance * z for z in getOrthogonalUnitVector(
-                    defenderHyperplane)])]
-                distanceToOriginalPoints2 = twoPointsDistance(oringinalPointList[i], movedPoint2)
-                if distanceToOriginalPoints1 <= longestMovingDistance:
-                    movedDefenderPointsList.append(movedPoint1)
-                elif distanceToOriginalPoints2 <= longestMovingDistance:
-                    movedDefenderPointsList.append(movedPoint2)
-                else:
-                    movedDefenderPointsList.append(inputPointList[i])
+            if distanceToOriginalPoints <= longestMovingDistance and singlePointSubscribeOfHyperplane(
+                    defenderHyperplane, movedPoint, ci) == 1:
+                movedDefenderPointsList.append(movedPoint)
             else:
-                movedDefenderPointsList.append(inputPointList[i])
-    # elif inputLineWithUtilities[1][0] == inputLineWithUtilities[1][2] + inputLineWithUtilities[1][3]: # Lower has more
-    else:  # Lower has more. Move Upper points to Lower place.
-        for i in range(len(inputPointList)):
-            n = 0
-            dimension = len(inputPointList[i])
-            b = 0  # Use for calculating point to hyperplane distance.
-            for j in range(dimension):
-                n += inputPointList[i][j] * defenderHyperplane.hyperPlaneEquation[j]
-                b += defenderHyperplane.hyperPlaneEquation[j] ** 2
-
-            n += defenderHyperplane.hyperPlaneEquation[dimension]
-            distance = (abs(n)) / math.sqrt(b)
-
-            if n > 0 and distance <= 0.2:
-                # Defender strategy. Lower has more. Move upper points to lower place.
-                movedPoint1 = [x - y for x, y in
-                              zip(inputPointList[i], [0.2 * x for x in getOrthogonalUnitVector(defenderHyperplane)])]
-                distanceToOriginalPoints1 = twoPointsDistance(oringinalPointList[i], movedPoint1)
-                movedPoint2 = [x - y for x, y in zip(inputPointList[i], [distance * x for x in getOrthogonalUnitVector(defenderHyperplane)])]
-                distanceToOriginalPoints2 = twoPointsDistance(oringinalPointList[i], movedPoint2)
-                if distanceToOriginalPoints1 <= longestMovingDistance:
-                    movedDefenderPointsList.append(movedPoint1)
-                elif distanceToOriginalPoints2 <= longestMovingDistance:
-                    movedDefenderPointsList.append(movedPoint2)
-                else:
-                    movedDefenderPointsList.append(inputPointList[i])
-            else:
-                movedDefenderPointsList.append(inputPointList[i])
-    # else:  # If two side has the same number of points. Haven't implemented.
-    #     raise ValueError("Crash at movedPointList")
-    #     ##########################Haven't implemented!!!!!!!!!!!!!!!!!!
+                movedDefenderPointsList.append(inputPointList[i]) # Not moving this point because the total moving
+                # distance is too large or cannot change the subscription status.
+        else:
+            movedDefenderPointsList.append(inputPointList[i]) # This point is already subscribed.
 
 
     # #Problems with this algorithm. Check back later!!!
@@ -253,7 +211,9 @@ def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, i
     # # else:  # If two side has the same number of points. Haven't implemented.
     # #     raise ValueError("Crash at movedPointList")
     # #     ##########################Haven't implemented!!!!!!!!!!!!!!!!!!
-    finalMovedPointList = movedDefenderPointsList
+
+    finalMovedPointList = movedDefenderPointsList # TODO: Delete this line when moving points to hurt adversary
+    # hyperplane is enable.
 
     _, defenderTotalSubscriptionNumber = countSubscribersOfHyperplane(defenderHyperplane,
                                                                                  finalMovedPointList,
@@ -262,11 +222,11 @@ def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, i
                                                                                finalMovedPointList, ci = ci)
 
     if defenderTotalSubscriptionNumber >= adversaryTotalSubscriptionNumber and defenderTotalSubscriptionNumber > 0:
-        return True, finalMovedPointList, defenderTotalSubscriptionNumber, adversaryTotalSubscriptionNumber
+        return True, finalMovedPointList, defenderTotalSubscriptionNumber
     elif defenderTotalSubscriptionNumber == 0:
         raise Exception("The defender total subscription number equals to 0. Bug!")
     else:
-        return False, [], defenderTotalSubscriptionNumber, adversaryTotalSubscriptionNumber
+        return False, [], defenderTotalSubscriptionNumber
 
 
 def isTwoPointsOnTheSameSideOfHyperplane(pointA, pointB, hyperplane:Hyperplane):
@@ -292,19 +252,23 @@ def countSubscribersOfHyperplane(inputHyperplane:Hyperplane, inputPointList, ci)
     totalSubscribeNumber = 0
 
     for inputPoint in inputPointList:
-        pointSubscribed = 0
-        n = []
-        for j in range(len(inputPoint)):
-            n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
-        n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
-        n = sum(n)
-        if n >= ci:
-            pointSubscribed = 1
+        pointSubscribed = singlePointSubscribeOfHyperplane(inputHyperplane=inputHyperplane, inputPoint=inputPoint,
+                                                           ci = ci)
+        if pointSubscribed == 1:
             totalSubscribeNumber += 1
-        else:
-            pointSubscribed = 0
         pointSubscribedList.append(pointSubscribed)
     return pointSubscribedList, totalSubscribeNumber
+
+def singlePointSubscribeOfHyperplane(inputHyperplane:Hyperplane, inputPoint, ci):
+    n = []
+    for j in range(len(inputPoint)):
+        n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
+    n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
+    n = sum(n)
+    if n >= ci:
+        return 1
+    else:
+        return 0
 
 ### Test
 

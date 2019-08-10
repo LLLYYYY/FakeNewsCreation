@@ -116,16 +116,16 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         #
         # print("Finished Getting Lines with Utilities No2")
 
-        hyperplaneList.sort(key=lambda pair: pair.l2Norm)
+        hyperplaneList.sort(key=lambda pair: pair.adversaryUtility)
         print("Finished Sorting Lines.")
 
 
-        #TODO: Added adversary utilities. Should be adversaryUtility inside the hyperplane class. But decided by >= ci.
+
         #Find the best strategy for adversary.
         adversaryHyperplane = Hyperplane([], [])
         defenderHyperplane = Hyperplane([], [])
         for hyperplane in hyperplaneList:
-            if hyperplane.maximumPointNumber > adversaryHyperplane.maximumPointNumber:
+            if hyperplane.adversaryUtility > adversaryHyperplane.adversaryUtility:
                 adversaryHyperplane = hyperplane
 
 
@@ -143,7 +143,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 break
 
             #TODO: FIX MOVE POINTS.
-            isSucceed, movedPointList, defenderMaximumPoint, adversaryMaximumUtility = movePoints(hyperplaneList[i],
+            isSucceed, movedPointList, defenderMaximumSubscription = movePoints(hyperplaneList[i],
                                                                                                      adversaryHyperplane,
 
                                                                                      consumerPointList, originalConsumerPointList,
@@ -171,8 +171,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                     raise Exception("Points not moving. But the code should not reach this point. Error.")
 
                 print("Found defender hyperplane " + str(i) + " that can do better than adversary hyperplane. \n" +
-                      "The Defender maximum point count is " + str(defenderMaximumPoint) + "\n" +
-                      "The Adversary maximum point count is " + str(adversaryMaximumUtility) + ".")
+                      "The Defender maximum point count is " + str(defenderMaximumSubscription) + "\n")
 
                 defenderHyperplane = hyperplaneList[i]
 
