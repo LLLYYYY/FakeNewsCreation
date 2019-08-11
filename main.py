@@ -65,8 +65,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         print("Finished getting hyperplane list. The size of the list is " + str(len(hyperplaneList)) + ".")
 
         hyperplaneList = getOriginalHyperplaneListWithUtilities(hyperplaneList, consumerPointList,
-                                                unbiasedStoryHyperplane.hyperPlaneEquation,
-                                               inputStoryVector=storyVectorList, ci = ci)
+                                                unbiasedStoryHyperplane.hyperPlaneEquation)
 
         print("Finished Getting Lines with Utilities")
 
@@ -86,7 +85,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         #The function will make sure mi is the same. Also, mi calculate is bigger than ci
         # not 0,
         hyperplaneList = getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList,
-                                                                 consumerPointList, unbiasedStoryHyperplane, ci)
+                                                                 consumerPointList, unbiasedStoryHyperplane.hyperPlaneEquation, ci)
         print("Finished generating converted hyperplane with utilities.")
 
 
@@ -106,12 +105,6 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         plotHyperplaneList(consumerPointList, plotConvertedHyperplaneList, plotOutputDirectory, "figure2.png")
 
         print("Finished printing the original and converted hyperplane charts.")
-
-        # # After regenerating the hyperplane. Needs to recalculate the L2Norm.
-        # getHyperplaneListWithUtilities(hyperplaneList, consumerPointList, unbiasedStoryHyperplane.hyperPlaneEquation,
-        #                                inputStoryVector=storyVectorList, ci=ci)
-        #
-        # print("Finished Getting Lines with Utilities No2")
 
         hyperplaneList.sort(key=lambda pair: pair.adversaryUtility)
         print("Finished Sorting Lines.")
@@ -139,7 +132,6 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 print("The defender hyperplane and the adversary hyperplane matched. List number: " + str(i))
                 break
 
-            #TODO: FIX MOVE POINTS.
             isSucceed, movedPointList, defenderMaximumSubscription = movePoints(hyperplaneList[i],
                                                                                                      adversaryHyperplane,
 
@@ -194,12 +186,6 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         smallestL2Norm = defenderHyperplane.defenderUtility
 
         print("Current minimum defender utility is " + str(smallestL2Norm) + ".\n\n\n")
-
-
-        #TODO: Will cause bugs. NOT sure why.
-        # if movedPointList == originalConsumerPointList:
-        #     functionEndTime = timeit.default_timer()
-        #     return False, (functionEndTime - functionStartTime)
 
         iter += 1
         minimumDefenderUtilityList.append(smallestL2Norm)

@@ -126,8 +126,6 @@ def twoPointsDistance (pointA, pointB):
     return distance
 
 
-
-#TODO: Move points not finished.
 def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, inputPointList, oringinalPointList, ci):
     """Try to move points so that the defender hyperplane can has more point counts than adversary hyperplane.
         If succeed, return True, finalMovedPointList, defenderMaximumPointNumber, adveraryMaximumPointNumber
@@ -220,6 +218,9 @@ def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, i
     _, adversaryTotalSubscriptionNumber = countSubscribersOfHyperplane(adversaryHyperplane,
                                                                                finalMovedPointList, ci = ci)
 
+    if finalMovedPointList == inputPointList or finalMovedPointList == oringinalPointList:
+        return False, [], defenderTotalSubscriptionNumber
+
     if defenderTotalSubscriptionNumber >= adversaryTotalSubscriptionNumber and defenderTotalSubscriptionNumber > 0:
         return True, finalMovedPointList, defenderTotalSubscriptionNumber
     elif defenderTotalSubscriptionNumber == 0:
@@ -262,7 +263,7 @@ def singlePointSubscribeOfHyperplane(inputHyperplane:Hyperplane, inputPoint, ci)
     n = []
     for j in range(len(inputPoint)):
         n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
-    n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
+    n.append(inputHyperplane.hyperPlaneEquation[-1])
     n = sum(n)
     if n >= ci:
         return 1

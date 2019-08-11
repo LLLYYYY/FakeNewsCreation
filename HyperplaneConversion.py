@@ -46,12 +46,12 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
     my_rows.append([my_colnames, len(xList) * [1]]) #sum(aj) <= k
     my_rhs.append(k)
 
-    print(my_rows)
-    print(my_rhs)
-    print(my_sense)
-    print(my_colnames)
-    print(my_rownames)
-    sys.stdout.flush()
+    # print(my_rows)
+    # print(my_rhs)
+    # print(my_sense)
+    # print(my_colnames)
+    # print(my_rownames)
+    # sys.stdout.flush()
 
     my_prob.linear_constraints.add(lin_expr=my_rows, senses=my_sense, rhs=my_rhs, names=my_rownames)
     #for i in range(len(my_colnames)):
@@ -83,11 +83,11 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
 
         generatedHyperplane = Hyperplane(generatedhyperplaneDirection+[0], []) #ignored alpha. Alpha becommes 0.
 
-        getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation,
-                                               xList, ci)
-        if generatedHyperplane.pointSubscription != consumerHyperplane.pointSubscription:
-            raise ValueError("Error in hyperplane conversion code. CPLEX returned a_j values without error, but still the m_i "
-                  "values do not match")
+        # getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation,
+        #                                        xList, ci)
+        # if generatedHyperplane.pointSubscription != consumerHyperplane.pointSubscription:
+        #     raise ValueError("Error in hyperplane conversion code. CPLEX returned a_j values without error, but still the m_i "
+        #           "values do not match")
         #print(generatedHyperplane.hyperPlaneEquation)
         #print("Generated Hyperplane's points subscription:" + str(generatedHyperplane.pointSubscription) + "\n\n\n\n")
         return generatedHyperplane
