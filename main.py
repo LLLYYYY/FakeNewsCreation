@@ -23,11 +23,8 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
     if not os.path.isdir(outputDirectory):
         os.mkdir(outputDirectory)
 
-
-    pointList = []
-    originalPointList = []
-    storyPointList = []
-    storyVectorNumber = 50
+    consumerPointList = []
+    storyVectorList = []
     hyperplaneList = []
     minimumDefenderUtilityList = []
     adversaryMaximumUtilityList = []

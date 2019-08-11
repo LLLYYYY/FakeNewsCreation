@@ -1,8 +1,7 @@
 import math
 import numpy as np
 from DataStructure import *
-
-longestMovingDistance = 0.4
+from config import *
 
 def getMeanHyperplane(inputStoryVectorList):
     """Input story vector list, return unbiased mean line.

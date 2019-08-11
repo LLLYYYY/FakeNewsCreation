@@ -4,12 +4,6 @@ from DataStructure import *
 from Multi_Dimension import *
 from cplex.exceptions.errors import *
 
-k = 3
-ci = 2
-
-e = 0.001
-M = 10000
-
 def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
 
     my_prob = cplex.Cplex()
@@ -69,11 +63,16 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
 
     print("The CPLEX status output is: " + str(my_prob.solution.get_status()))
 
-    generatedHyperplane = []
     if my_prob.solution.get_status() is 1:
         a = my_prob.solution.get_values()
+        isAllZeros = True
         for j in range(len(xList)):
-            print("Column %s %d:  Value = %10f" % (my_colnames[j], j, xList[j]))
+            print("Column " + str(my_colnames[j]) + " " + str(j) + ", value = " + str(a[j]))
+            if a[j] != 0.0:
+                isAllZeros = False
+
+        if isAllZeros is True:
+            raise ValueError("CPLEX return all zeros solution.")
 
         generatedhyperplaneDirection = len(vList[0]) * [0]
         for j in range(len(xList)):
@@ -91,9 +90,9 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
                   "values do not match")
         #print(generatedHyperplane.hyperPlaneEquation)
         #print("Generated Hyperplane's points subscription:" + str(generatedHyperplane.pointSubscription) + "\n\n\n\n")
+        return generatedHyperplane
     else:
         raise CplexSolverError("No Solution Exists. Cplex solution status not equals to " + str(my_prob.solution.get_status()))
-    return generatedHyperplane
 
 
 def testHyperPlaneConversion():
