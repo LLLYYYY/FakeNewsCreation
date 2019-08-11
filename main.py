@@ -212,12 +212,16 @@ def plotDefAdvHyperplane(pointList, defenderHyperplaneEquation, adversaryHyperpl
         if len(pointList[0]) != 2:
             return
 
+    if defenderHyperplaneEquation[1] == 0 or adversaryHyperplaneEquation[1] == 0:
+        print("The y axis parameter of the hyperplane equals to zero. Not plotting.")
+        return
+
     fig = plt.figure()
     plt.scatter(*zip(*pointList))
     defenderPlotLineX = [-1, 1]
     adversaryPlotLineX = [-1, 1]
 
-    #TODO: Will crash if hyperplane's parameter at y axis equal to 0.
+
     defenderPlotLineY = [defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
         2] / defenderHyperplaneEquation[1], -defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] -
                          defenderHyperplaneEquation[
@@ -240,6 +244,11 @@ def plotHyperplaneList(pointList, hyperplaneList, plotOutputDirectory, plotFileN
         if len(pointList[0]) != 2:
             return
 
+    for hyperplane in hyperplaneList:
+        if hyperplane[1] == 0:
+            print("The y axis parameter of the hyperplane equals to zero. Not plotting.")
+            return
+
     fig = plt.figure()
     plt.scatter(*zip(*pointList))
     plotLineListX = []
@@ -247,7 +256,6 @@ def plotHyperplaneList(pointList, hyperplaneList, plotOutputDirectory, plotFileN
     for hyperplane in hyperplaneList:
         hyperplaneEquation = hyperplane.hyperPlaneEquation
         plotLineListX.append([-1,1])
-        # TODO: Will crash if hyperplane's parameter at y axis equal to 0.
         plotLineListY.append([hyperplaneEquation[0] / hyperplaneEquation[1] - hyperplaneEquation[
         2] / hyperplaneEquation[1], -hyperplaneEquation[0] / hyperplaneEquation[1] -
                          hyperplaneEquation[

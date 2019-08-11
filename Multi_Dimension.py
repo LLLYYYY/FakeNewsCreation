@@ -18,6 +18,14 @@ def getMeanHyperplane(inputStoryVectorList):
         n /= len(inputStoryVectorList)
         meanPoint.append(n)
 
+    # # Change to unit vector.
+    # meg = math.sqrt(sum([x**2 for x in meanPoint]))
+    # if meg != 0:
+    #     for i in range(len(meanPoint)):
+    #         meanPoint[i] = meanPoint[i] / meg
+    # else:
+    #     raise ValueError("Getting a all zeros mean points")
+
     meanHyperplane = Hyperplane([*meanPoint, 0])
     return meanHyperplane
 
@@ -39,26 +47,27 @@ def getHyperplaneEquation(pointList):
     hyperplaneEauation = hyperplaneMatrix.tolist()
     hyperplaneEauation.append(-1)
 
-
-    if hyperplaneEauation[1] < 0:
-        hyperplaneEauation = [-x for x in hyperplaneEauation]
-
-    if hyperplaneEauation[1] == 0:
-        raise ValueError("Hyperplane parallel to the y axis. Error!")
-    else:
-        devider = hyperplaneEauation[1]
-        hyperplaneEauation = [x/devider for x in hyperplaneEauation]
+    # # When y = 0, possible to crash.
+    # if hyperplaneEauation[1] < 0:
+    #     hyperplaneEauation = [-x for x in hyperplaneEauation]
+    #
+    # if hyperplaneEauation[1] == 0:
+    #     raise ValueError("Hyperplane parallel to the y axis. Error!")
+    # else:
+    #     devider = hyperplaneEauation[1]
+    #     hyperplaneEauation = [x/devider for x in hyperplaneEauation]
+    # meg = math.sqrt(sum([x ** 2 for x in hyperplaneEauation[-1]]))
+    # for i in range(len(hyperplaneEauation)):
+    #     hyperplaneEauation[i] = hyperplaneEauation[i] / meg
 
     outputHyperplaneEquation = Hyperplane(hyperPlaneEquation = hyperplaneEauation)
     return outputHyperplaneEquation
 
 def getOrthogonalUnitVector(inputHyperplane:Hyperplane):
     orthogonalVector = inputHyperplane.hyperPlaneEquation[:-1]
-    meg = math.sqrt(sum([x**2 for x in orthogonalVector]))
 
+    meg = math.sqrt(sum([x**2 for x in orthogonalVector]))
     orthogonalUnitVector = [ x/meg for x in orthogonalVector]
-    if orthogonalUnitVector[1] < 0:  #Just in case. Not gonna happen.
-        orthogonalUnitVector = [-x for x in orthogonalUnitVector]
 
     return orthogonalUnitVector
 
@@ -80,9 +89,8 @@ def getOriginalHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], co
         norm = 0
         for k in range(len(inputHyperPlaneList[i].hyperPlaneEquation)-1): # Don't count the constant variable???  Not
             # counting now.
-            #TODO: It is possible that hyperplaneequation[1] == 0. It will crush.
-            norm += (inputHyperPlaneList[i].hyperPlaneEquation[k]/inputHyperPlaneList[i].hyperPlaneEquation[1] -
-            unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
+            norm += (inputHyperPlaneList[i].hyperPlaneEquation[k] -
+            unbiasedVector[k]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
         norm = math.sqrt(norm)
 
         inputHyperPlaneList[i].defenderUtility = norm
@@ -90,7 +98,9 @@ def getOriginalHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], co
 
 def getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList: [[Hyperplane, Hyperplane]],
                                             consumerPointList, unbiasedVector, ci):
-    """Dimension Free."""
+    """Dimension Free.
+        Mostly the same as get original hyperplane utilities function. Added ci number and check subscription list.
+    """
     originalHyperplaneList = [originalConvertedHyperplaneMatchList[i][0] for i in range(len(originalConvertedHyperplaneMatchList))]
     convertedHyperplaneList = [originalConvertedHyperplaneMatchList[i][1] for i in range(len(
         originalConvertedHyperplaneMatchList))]
@@ -107,10 +117,8 @@ def getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList
         for k in range(
                 len(convertedHyperplaneList[i].hyperPlaneEquation) - 1):  # Don't count the constant variable???  Not
             # counting now.
-            # TODO: It is possible that hyperplaneequation[1] == 0. It will crush.
-            norm += (convertedHyperplaneList[i].hyperPlaneEquation[k] / convertedHyperplaneList[i].hyperPlaneEquation[1] -
-                     unbiasedVector[k] / unbiasedVector[
-                         1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
+            norm += (convertedHyperplaneList[i].hyperPlaneEquation[k] -
+                     unbiasedVector[k]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
         norm = math.sqrt(norm)
         convertedHyperplaneList[i].defenderUtility = norm
     return convertedHyperplaneList
