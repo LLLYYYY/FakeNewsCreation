@@ -63,7 +63,8 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
     #for i in range(len(my_colnames)):
     #    my_prob.variables.set_types( i , my_prob.variables.type.binary)
 
-    my_prob.write("/Users/sly/Downloads/FakeNewsOutput/file.lp")
+    #my_prob.write("/Users/sly/Downloads/FakeNewsOutput/file.lp")
+    my_prob.write("/Users/auy212-admin/Downloads/FakeNewsOutput/file.lp")
 
     my_prob.solve()
 
@@ -93,7 +94,7 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
         for point in vList:
             print(point)
             debugsinglePointSubscribeOfHyperplane(generatedHyperplane, point, ci)
-        #TODO: Conflicts of both version.
+
         #getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation,xList, ci)
         getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation)
 

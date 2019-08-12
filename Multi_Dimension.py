@@ -18,14 +18,6 @@ def getMeanHyperplane(inputStoryVectorList):
         n /= len(inputStoryVectorList)
         meanPoint.append(n)
 
-    # # Change to unit vector.
-    # meg = math.sqrt(sum([x**2 for x in meanPoint]))
-    # if meg != 0:
-    #     for i in range(len(meanPoint)):
-    #         meanPoint[i] = meanPoint[i] / meg
-    # else:
-    #     raise ValueError("Getting a all zeros mean points")
-
     meanHyperplane = Hyperplane([*meanPoint, 0])
     return meanHyperplane
 
@@ -47,27 +39,26 @@ def getHyperplaneEquation(pointList):
     hyperplaneEauation = hyperplaneMatrix.tolist()
     hyperplaneEauation.append(-1)
 
-    # # When y = 0, possible to crash.
-    # if hyperplaneEauation[1] < 0:
-    #     hyperplaneEauation = [-x for x in hyperplaneEauation]
-    #
-    # if hyperplaneEauation[1] == 0:
-    #     raise ValueError("Hyperplane parallel to the y axis. Error!")
-    # else:
-    #     devider = hyperplaneEauation[1]
-    #     hyperplaneEauation = [x/devider for x in hyperplaneEauation]
-    # meg = math.sqrt(sum([x ** 2 for x in hyperplaneEauation[-1]]))
-    # for i in range(len(hyperplaneEauation)):
-    #     hyperplaneEauation[i] = hyperplaneEauation[i] / meg
+
+    if hyperplaneEauation[1] < 0:
+        hyperplaneEauation = [-x for x in hyperplaneEauation]
+
+    if hyperplaneEauation[1] == 0:
+        raise ValueError("Hyperplane parallel to the y axis. Error!")
+    else:
+        devider = hyperplaneEauation[1]
+        hyperplaneEauation = [x/devider for x in hyperplaneEauation]
 
     outputHyperplaneEquation = Hyperplane(hyperPlaneEquation = hyperplaneEauation)
     return outputHyperplaneEquation
 
 def getOrthogonalUnitVector(inputHyperplane:Hyperplane):
     orthogonalVector = inputHyperplane.hyperPlaneEquation[:-1]
-
     meg = math.sqrt(sum([x**2 for x in orthogonalVector]))
+
     orthogonalUnitVector = [ x/meg for x in orthogonalVector]
+    if orthogonalUnitVector[1] < 0:  #Just in case. Not gonna happen.
+        orthogonalUnitVector = [-x for x in orthogonalUnitVector]
 
     return orthogonalUnitVector
 
@@ -127,9 +118,7 @@ def getOriginalHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], co
 
 def getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList: [[Hyperplane, Hyperplane]],
                                             consumerPointList, unbiasedVector, ci):
-    """Dimension Free.
-        Mostly the same as get original hyperplane utilities function. Added ci number and check subscription list.
-    """
+    """Dimension Free."""
     originalHyperplaneList = [originalConvertedHyperplaneMatchList[i][0] for i in range(len(originalConvertedHyperplaneMatchList))]
     convertedHyperplaneList = [originalConvertedHyperplaneMatchList[i][1] for i in range(len(
         originalConvertedHyperplaneMatchList))]
@@ -165,6 +154,8 @@ def twoPointsDistance (pointA, pointB):
     return distance
 
 
+
+#TODO: Move points not finished.
 def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, inputPointList, oringinalPointList, ci):
     """Try to move points so that the defender hyperplane can has more point counts than adversary hyperplane.
         If succeed, return True, finalMovedPointList, defenderMaximumPointNumber, adveraryMaximumPointNumber
@@ -256,9 +247,6 @@ def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, i
                                                                          ci= ci)
     _, adversaryTotalSubscriptionNumber = countSubscribersOfHyperplane(adversaryHyperplane,
                                                                                finalMovedPointList, ci = ci)
-
-    # if finalMovedPointList == inputPointList or finalMovedPointList == oringinalPointList:
-    #     return False, [], defenderTotalSubscriptionNumber
 
     if defenderTotalSubscriptionNumber >= adversaryTotalSubscriptionNumber and defenderTotalSubscriptionNumber > 0:
         return True, finalMovedPointList, defenderTotalSubscriptionNumber
@@ -392,6 +380,3 @@ def testGetHyperplaneListWithUtilities():
     pointList = [[1,1],[2,2],[3,3],[4,4],[5,5]]
     getOriginalHyperplaneListWithUtilities(hyperPlaneList, pointList, unbiasedPlane)
     print(hyperPlaneList[1].maximumPointNumber)
-
-# testGetHyperplaneEquation()
-# testGetHyperplaneListWithUtilities()

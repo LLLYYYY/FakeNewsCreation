@@ -76,7 +76,6 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         #    print(hyperplane.pointSubscription)
 
         print("Finished Getting Lines with Utilities")
-        #TODO: Remove debug statements
         #debug
         iterRange = [i for i in range(numOfComsumerPoints)]
         allComb = combinations(iterRange, pointDimension)
@@ -169,6 +168,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 print("The defender hyperplane and the adversary hyperplane matched. List number: " + str(i))
                 break
 
+            #TODO: FIX MOVE POINTS.
             isSucceed, movedPointList, defenderMaximumSubscription = movePoints(hyperplaneList[i],
                                                                                                      adversaryHyperplane,
 
@@ -202,9 +202,9 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 defenderHyperplane = hyperplaneList[i]
 
                 # # For Debug purpose.
-                # print(hyperplaneList[0].defenderUtility,  hyperplaneList[1].defenderUtility, hyperplaneList[2].defenderUtility)
-                # print(hyperplaneList[i].defenderUtility)
-                # print(hyperplaneList[-1].defenderUtility)
+                #print(hyperplaneList[0].defenderUtility,  hyperplaneList[1].defenderUtility, hyperplaneList[2].defenderUtility)
+                #print(hyperplaneList[i].defenderUtility)
+                #print(hyperplaneList[-1].defenderUtility)
 
                 if pointDimension == 2:
                     plotDefAdvHyperplane(consumerPointList, defenderHyperplane.hyperPlaneEquation,
@@ -223,6 +223,12 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         smallestL2Norm = defenderHyperplane.defenderUtility
 
         print("Current minimum defender utility is " + str(smallestL2Norm) + ".\n\n\n")
+
+
+        #TODO: Will cause bugs. NOT sure why.
+        # if movedPointList == originalConsumerPointList:
+        #     functionEndTime = timeit.default_timer()
+        #     return False, (functionEndTime - functionStartTime)
 
         iter += 1
         minimumDefenderUtilityList.append(smallestL2Norm)
@@ -249,16 +255,12 @@ def plotDefAdvHyperplane(pointList, defenderHyperplaneEquation, adversaryHyperpl
         if len(pointList[0]) != 2:
             return
 
-    if defenderHyperplaneEquation[1] == 0 or adversaryHyperplaneEquation[1] == 0:
-        print("The y axis parameter of the hyperplane equals to zero. Not plotting.")
-        return
-
     fig = plt.figure()
     plt.scatter(*zip(*pointList))
     defenderPlotLineX = [-1, 1]
     adversaryPlotLineX = [-1, 1]
 
-
+    #TODO: Will crash if hyperplane's parameter at y axis equal to 0.
     defenderPlotLineY = [defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
         2] / defenderHyperplaneEquation[1], -defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] -
                          defenderHyperplaneEquation[
@@ -281,11 +283,6 @@ def plotHyperplaneList(pointList, hyperplaneList, plotOutputDirectory, plotFileN
         if len(pointList[0]) != 2:
             return
 
-    for hyperplane in hyperplaneList:
-        if hyperplane[1] == 0:
-            print("The y axis parameter of the hyperplane equals to zero. Not plotting.")
-            return
-
     fig = plt.figure()
     plt.scatter(*zip(*pointList))
     plotLineListX = []
@@ -293,6 +290,7 @@ def plotHyperplaneList(pointList, hyperplaneList, plotOutputDirectory, plotFileN
     for hyperplane in hyperplaneList:
         hyperplaneEquation = hyperplane.hyperPlaneEquation
         plotLineListX.append([-1,1])
+        # TODO: Will crash if hyperplane's parameter at y axis equal to 0.
         plotLineListY.append([hyperplaneEquation[0] / hyperplaneEquation[1] - hyperplaneEquation[
         2] / hyperplaneEquation[1], -hyperplaneEquation[0] / hyperplaneEquation[1] -
                          hyperplaneEquation[
@@ -306,11 +304,11 @@ def plotHyperplaneList(pointList, hyperplaneList, plotOutputDirectory, plotFileN
     return
 
 # Run
-
 dimensionRunTimeList = []
 pointNumRunTimeList = []
 
-outputDirectory = sys.argv[1]
+#outputDirectory = sys.argv[1]
+outputDirectory = ("/Users/auy212-admin/Downloads/FakeNewsOutput")
 if not os.path.isdir(outputDirectory):
     raise Exception("Output Directory not accessible.")
 
