@@ -77,10 +77,28 @@ def getOriginalHyperplaneListWithUtilities2(inputHyperPlaneList: [Hyperplane], c
 
         # L2 Norm:
         norm = 0
-        for k in range(len(inputHyperPlaneList[i].hyperPlaneEquation)-1): # Don't count the constant variable???  Not
+
+        #get unit vector for unbiased vector and hyperplaneEquation
+        # Change the normal vector to unit vector.
+        unbiasedVector2 = unbiasedVector
+        unbiasedVecMagnitude = (sum([x ** 2 for x in unbiasedVector[:-1]])) ** 0.5
+        if unbiasedVecMagnitude != 0:
+             unbiasedVector2 = [x/unbiasedVecMagnitude for x in unbiasedVector]
+        else:
+             raise ValueError("Getting a all zeros hyperplane.")
+        # Change the hyperplane vector to unit vector.
+        currHyperplane = inputHyperPlaneList[i].hyperPlaneEquation
+        hyperplaneMagnitude = (sum([x ** 2 for x in inputHyperPlaneList[i].hyperPlaneEquation[:-1]])) ** 0.5
+        if hyperplaneMagnitude != 0:
+            currHyperplane = [x / hyperplaneMagnitude for x in inputHyperPlaneList[i].hyperPlaneEquation]
+        else:
+            raise ValueError("Getting a all zeros hyperplane.")
+
+        #for k in range(len(inputHyperPlaneList[i].hyperPlaneEquation)-1): # Don't count the constant variable???  Not
             # counting now.
+        for k in range(len(currHyperplane)-1):
             #TODO: It is possible that hyperplaneequation[1] == 0. It will crush.
-            norm += (inputHyperPlaneList[i].hyperPlaneEquation[k] - unbiasedVector[k]) ** 2
+            norm += (currHyperplane[k] - unbiasedVector2[k]) ** 2
             #norm += (inputHyperPlaneList[i].hyperPlaneEquation[k]/inputHyperPlaneList[i].hyperPlaneEquation[1] -
             #unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
         norm = math.sqrt(norm)
@@ -104,16 +122,32 @@ def getOriginalHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], co
 
         # L2 Norm:
         norm = 0
-        currHyperPlane = inputHyperPlaneList[i]
-        for k in range(len(currHyperPlane.hyperPlaneEquation)-1): # Don't count the constant variable???  Not
+        # get unit vector for unbiased vector and hyperplaneEquation
+        # Change the normal vector to unit vector.
+        unbiasedVector2 = unbiasedVector
+        unbiasedVecMagnitude = (sum([x ** 2 for x in unbiasedVector[:-1]])) ** 0.5
+        if unbiasedVecMagnitude != 0:
+            unbiasedVector2 = [x / unbiasedVecMagnitude for x in unbiasedVector]
+        else:
+            raise ValueError("Getting a all zeros hyperplane.")
+        # Change the hyperplane vector to unit vector.
+        currHyperplane = inputHyperPlaneList[i].hyperPlaneEquation
+        hyperplaneMagnitude = (sum([x ** 2 for x in inputHyperPlaneList[i].hyperPlaneEquation[:-1]])) ** 0.5
+        if hyperplaneMagnitude != 0:
+            currHyperplane = [x / hyperplaneMagnitude for x in inputHyperPlaneList[i].hyperPlaneEquation]
+        else:
+            raise ValueError("Getting a all zeros hyperplane.")
+
+
+        for k in range(len(currHyperplane)-1): # Don't count the constant variable???  Not
             # counting now.
             #TODO: It is possible that hyperplaneequation[1] == 0. It will crush.
-            norm += (currHyperPlane.hyperPlaneEquation[k] - unbiasedVector[k]) ** 2
+            norm += (currHyperplane[k] - unbiasedVector2[k]) ** 2
             #norm += (inputHyperPlaneList[i].hyperPlaneEquation[k]/inputHyperPlaneList[i].hyperPlaneEquation[1] -
             #unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
         norm = math.sqrt(norm)
 
-        currHyperPlane.defenderUtility = norm
+        inputHyperPlaneList[i].defenderUtility = norm
     return inputHyperPlaneList
 
 def getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList: [[Hyperplane, Hyperplane]],
@@ -132,15 +166,30 @@ def getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList
 
         # L2 Norm:
         norm = 0
-        currHyperplane = convertedHyperplaneList[i]
-        for k in range(len(currHyperplane.hyperPlaneEquation) - 1):  # Don't count the constant variable???  Not
+        # get unit vector for unbiased vector and hyperplaneEquation
+        # Change the normal vector to unit vector.
+        unbiasedVector2 = unbiasedVector
+        unbiasedVecMagnitude = (sum([x ** 2 for x in unbiasedVector[:-1]])) ** 0.5
+        if unbiasedVecMagnitude != 0:
+            unbiasedVector2 = [x / unbiasedVecMagnitude for x in unbiasedVector]
+        else:
+            raise ValueError("Getting a all zeros hyperplane.")
+        # Change the hyperplane vector to unit vector.
+        currHyperplane = convertedHyperplaneList[i].hyperPlaneEquation
+        hyperplaneMagnitude = (sum([x ** 2 for x in convertedHyperplaneList[i].hyperPlaneEquation[:-1]])) ** 0.5
+        if hyperplaneMagnitude != 0:
+            currHyperplane = [x / hyperplaneMagnitude for x in convertedHyperplaneList[i].hyperPlaneEquation]
+        else:
+            raise ValueError("Getting a all zeros hyperplane.")
+
+        for k in range(len(currHyperplane) - 1):  # Don't count the constant variable???  Not
             # counting now.
             # TODO: It is possible that hyperplaneequation[1] == 0. It will crush.
-            norm += (currHyperplane.hyperPlaneEquation[k] - unbiasedVector[k]) ** 2
+            norm += (currHyperplane[k] - unbiasedVector2[k]) ** 2
             #norm += (convertedHyperplaneList[i].hyperPlaneEquation[k] / convertedHyperplaneList[i].hyperPlaneEquation[1] -
             #         unbiasedVector[k] / unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
         norm = math.sqrt(norm)
-        currHyperplane.defenderUtility = norm
+        convertedHyperplaneList[i].defenderUtility = norm
     return convertedHyperplaneList
 
 
@@ -155,7 +204,6 @@ def twoPointsDistance (pointA, pointB):
 
 
 
-#TODO: Move points not finished.
 def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, inputPointList, oringinalPointList, ci):
     """Try to move points so that the defender hyperplane can has more point counts than adversary hyperplane.
         If succeed, return True, finalMovedPointList, defenderMaximumPointNumber, adveraryMaximumPointNumber
@@ -165,13 +213,24 @@ def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, i
     finalMovedPointList = []
 
     # Move points to benefits defender.
-    # Always move upward.
     for i in range(len(inputPointList)):
-
-        # Defender strategy. Always move upward.
         if defenderHyperplane.pointSubscription[i] == 0:
-            movedPoint = [x + y for x, y in zip(inputPointList[i], [singleTimeMovingDistance * z for z in getOrthogonalUnitVector(
-                defenderHyperplane)])]
+            beta = []
+            gamma = []
+            normalUnitVector = getOrthogonalUnitVector(defenderHyperplane)
+            for j in range(len(inputPointList[i])):
+                beta.append(inputPointList[i][j] * defenderHyperplane.hyperPlaneEquation[j])
+                gamma.append(normalUnitVector[j] * defenderHyperplane.hyperPlaneEquation[j])
+
+            beta = sum(beta)
+            gamma = sum(gamma)
+
+            lowerBoundonDistance = (ci - beta)/ gamma
+
+            movedPoint = [x + y for x, y in
+                          zip(inputPointList[i], [lowerBoundonDistance * z for z in getOrthogonalUnitVector(
+                              defenderHyperplane)])]
+
             distanceToOriginalPoints = twoPointsDistance(oringinalPointList[i], movedPoint)
 
             if distanceToOriginalPoints <= longestMovingDistance and singlePointSubscribeOfHyperplane(
@@ -184,59 +243,7 @@ def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, i
             movedDefenderPointsList.append(inputPointList[i]) # This point is already subscribed.
 
 
-    # #Problems with this algorithm. Check back later!!!
-    # # Move points to hurt the adversary.
-    # if adversaryHyperplane.maximumPointNumber == adversaryHyperplane.upperPointNumber + \
-    #         adversaryHyperplane.onLinePointNumber: # Upper has more
-    #     for point in movedDefenderPointsList:
-    #
-    #         n = 0
-    #         dimension = len(point)
-    #         b = 0 # Use for calculating point to hyperplane distance.
-    #         for i in range(dimension):
-    #             n += point[i] * adversaryHyperplane.hyperPlaneEquation[i]
-    #             b += adversaryHyperplane.hyperPlaneEquation[i] ** 2
-    #
-    #         n += adversaryHyperplane.hyperPlaneEquation[dimension]
-    #         distance = (abs(n))/math.sqrt(b)
-    #
-    #         if n > 0  and  distance <= 0.2:
-    #             # Adversary strategy. Upper has more. Move upper points to lower place.
-    #             movedPoint = [xList - y for xList, y in zip(point, getOrthogonalUnitVector(
-    #                 adversaryHyperplane))]
-    #             if isTwoPointsOnTheSameSideOfHyperplane(movedPoint, point, defenderHyperplane): #Check if moved points hurts defender
-    #                 # utility.
-    #                 finalMovedPointList.append(movedPoint)
-    #             else:
-    #                 finalMovedPointList.append(point)
-    #         else:
-    #             finalMovedPointList.append(point)
-    # # elif inputLineWithUtilities[1][0] == inputLineWithUtilities[1][2] + inputLineWithUtilities[1][3]: # Lower has more
-    # else:  # Lower has more. Move Upper points to Lower place.
-    #     for point in movedDefenderPointsList:
-    #         n = 0
-    #         dimension = len(point)
-    #         b = 0  # Use for calculating point to hyperplane distance.
-    #         for i in range(dimension):
-    #             n += point[i] * adversaryHyperplane.hyperPlaneEquation[i]
-    #             b += adversaryHyperplane.hyperPlaneEquation[i] ** 2
-    #
-    #         n += adversaryHyperplane.hyperPlaneEquation[dimension]
-    #         distance = (abs(n)) / math.sqrt(b)
-    #
-    #         if n < 0 and distance <= 0.2:
-    #             # Adversary strategy. Lower has more. Move lower points to upper place.
-    #             movedPoint = [xList + y for xList, y in
-    #                           zip(point, getOrthogonalUnitVector(adversaryHyperplane))]
-    #             if isTwoPointsOnTheSameSideOfHyperplane(movedPoint, point, defenderHyperplane):  #Check if moved points hurts defender
-    #                 # utility.
-    #                 finalMovedPointList.append(movedPoint)
-    #             else:
-    #                 finalMovedPointList.append(point)
-    #         else:
-    #             finalMovedPointList.append(point)
-    # # else:  # If two side has the same number of points. Haven't implemented.
-    # #     raise ValueError("Crash at movedPointList")
+
     # #     ##########################Haven't implemented!!!!!!!!!!!!!!!!!!
 
     finalMovedPointList = movedDefenderPointsList # TODO: Delete this line when moving points to hurt adversary
@@ -247,6 +254,9 @@ def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, i
                                                                          ci= ci)
     _, adversaryTotalSubscriptionNumber = countSubscribersOfHyperplane(adversaryHyperplane,
                                                                                finalMovedPointList, ci = ci)
+
+    # if finalMovedPointList == inputPointList or finalMovedPointList == oringinalPointList:
+    #     return False, [], defenderTotalSubscriptionNumber
 
     if defenderTotalSubscriptionNumber >= adversaryTotalSubscriptionNumber and defenderTotalSubscriptionNumber > 0:
         return True, finalMovedPointList, defenderTotalSubscriptionNumber

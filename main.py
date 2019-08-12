@@ -272,6 +272,8 @@ def plotDefAdvHyperplane(pointList, defenderHyperplaneEquation, adversaryHyperpl
             2] / adversaryHyperplaneEquation[1]]
     plt.plot(defenderPlotLineX, defenderPlotLineY)
     plt.plot(adversaryPlotLineX, adversaryPlotLineY)
+    plt.xlim(-3,3)
+    plt.ylim(-3,3)
     plt.savefig(os.path.join(plotOutputDirectory, plotFileName))
     plt.close(fig)
 
@@ -298,6 +300,8 @@ def plotHyperplaneList(pointList, hyperplaneList, plotOutputDirectory, plotFileN
 
     for i in range(len(plotLineListX)):
         plt.plot(plotLineListX[i],plotLineListY[i])
+    plt.xlim(-3, 3)
+    plt.ylim(-3, 3)
     plt.savefig(os.path.join(plotOutputDirectory, plotFileName))
     plt.close(fig)
 
@@ -307,8 +311,8 @@ def plotHyperplaneList(pointList, hyperplaneList, plotOutputDirectory, plotFileN
 dimensionRunTimeList = []
 pointNumRunTimeList = []
 
-#outputDirectory = sys.argv[1]
-outputDirectory = ("/Users/auy212-admin/Downloads/FakeNewsOutput")
+outputDirectory = sys.argv[1]
+#outputDirectory = ("/Users/auy212-admin/Downloads/FakeNewsOutput")
 if not os.path.isdir(outputDirectory):
     raise Exception("Output Directory not accessible.")
 
