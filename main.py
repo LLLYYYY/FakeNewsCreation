@@ -61,16 +61,45 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
             pointListUsedToGenerateHyperplane = []
             for i in comb:
                 pointListUsedToGenerateHyperplane.append(consumerPointList[i])
+            #perturb the point list. Will work only for 2D
+            #TODO: Fix for N dimensions
+            pointListUsedToGenerateHyperplane[0] = [pointListUsedToGenerateHyperplane[0][0]+ 0.001, pointListUsedToGenerateHyperplane[0][1]+0.001]
+            pointListUsedToGenerateHyperplane[1] = [pointListUsedToGenerateHyperplane[1][0]- 0.001, pointListUsedToGenerateHyperplane[1][1]-0.001]
+
             hyperplaneList.append(getHyperplaneEquation(pointListUsedToGenerateHyperplane))
         print("Finished getting hyperplane list. The size of the list is " + str(len(hyperplaneList)) + ".")
 
-        hyperplaneList = getOriginalHyperplaneListWithUtilities(hyperplaneList, consumerPointList,
-                                                unbiasedStoryHyperplane.hyperPlaneEquation,
-                                               inputStoryVector=storyVectorList, ci = ci)
+        hyperplaneList = getOriginalHyperplaneListWithUtilities2(hyperplaneList, consumerPointList,
+                                                unbiasedStoryHyperplane.hyperPlaneEquation)
+
+        #for hyperplane in hyperplaneList:
+        #    print(hyperplane.pointSubscription)
 
         print("Finished Getting Lines with Utilities")
-
+        #debug
+        iterRange = [i for i in range(numOfComsumerPoints)]
+        allComb = combinations(iterRange, pointDimension)
+        #debug
+        counter=0
         for hyperplane in hyperplaneList:
+            #debug
+            comb_counter=0
+            for comb in allComb:
+                if (comb_counter==counter):
+                    print("Current combination of points being considered: ")
+                    for nv in comb:
+                        print(consumerPointList[nv])
+                    break
+                comb_counter=comb_counter+1
+
+            counter=counter+1
+
+            #print(hyperplane.pointSubscription)
+            #print(hyperplane.hyperPlaneEquation)
+            for v in consumerPointList:
+                print(v)
+                debugsinglePointSubscribeOfHyperplane2(hyperplane, v, ci)
+            #debug
             try:
                 convertedHyperplane = hyperPlaneConversion(hyperplane, consumerPointList, storyVectorList)
                 originalConvertedHyperplaneMatchList.append([hyperplane, convertedHyperplane])
@@ -86,7 +115,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         #The function will make sure mi is the same. Also, mi calculate is bigger than ci
         # not 0,
         hyperplaneList = getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList,
-                                                                 consumerPointList, unbiasedStoryHyperplane, ci)
+                                                                 consumerPointList, unbiasedStoryHyperplane.hyperPlaneEquation, ci)
         print("Finished generating converted hyperplane with utilities.")
 
 
@@ -173,9 +202,9 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 defenderHyperplane = hyperplaneList[i]
 
                 # # For Debug purpose.
-                # print(hyperplaneList[0].defenderUtility,  hyperplaneList[1].defenderUtility, hyperplaneList[2].defenderUtility)
-                # print(hyperplaneList[i].defenderUtility)
-                # print(hyperplaneList[-1].defenderUtility)
+                #print(hyperplaneList[0].defenderUtility,  hyperplaneList[1].defenderUtility, hyperplaneList[2].defenderUtility)
+                #print(hyperplaneList[i].defenderUtility)
+                #print(hyperplaneList[-1].defenderUtility)
 
                 if pointDimension == 2:
                     plotDefAdvHyperplane(consumerPointList, defenderHyperplane.hyperPlaneEquation,
@@ -275,11 +304,11 @@ def plotHyperplaneList(pointList, hyperplaneList, plotOutputDirectory, plotFileN
     return
 
 # Run
-
 dimensionRunTimeList = []
 pointNumRunTimeList = []
 
-outputDirectory = sys.argv[1]
+#outputDirectory = sys.argv[1]
+outputDirectory = ("/Users/auy212-admin/Downloads/FakeNewsOutput")
 if not os.path.isdir(outputDirectory):
     raise Exception("Output Directory not accessible.")
 

@@ -10,8 +10,10 @@ consumerTotalPointNumberList = [50]  #Must be a list!!!
 # For equation to convert the hyperplane.
 k = 3
 ci = 0.1
-e = 0.001
+e = 0.00001
 M = 100000
+
+precisionError=1e-10
 
 
 epsilon = 0.001  # Use for determine the minimum l2norm change.
