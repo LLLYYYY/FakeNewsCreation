@@ -71,6 +71,32 @@ def getOrthogonalUnitVector(inputHyperplane:Hyperplane):
 
     return orthogonalUnitVector
 
+def getOriginalHyperplaneListWithUtilities2(inputHyperPlaneList: [Hyperplane], consumerPointList, unbiasedVector):
+
+    """Return hyperPlane list with utilities.
+        Dimension Free.
+        InputHyperPlaneList is a Hyperplane instance. But UnbiasedVector is just a vector list.
+    """
+
+    for i in range(len(inputHyperPlaneList)):
+
+        inputHyperPlaneList[i].pointSubscription, inputHyperPlaneList[i].adversaryUtility = \
+            countSubscribersOfHyperplane2(
+            inputHyperPlaneList[i], consumerPointList, ci)
+
+        # L2 Norm:
+        norm = 0
+        for k in range(len(inputHyperPlaneList[i].hyperPlaneEquation)-1): # Don't count the constant variable???  Not
+            # counting now.
+            #TODO: It is possible that hyperplaneequation[1] == 0. It will crush.
+            norm += (inputHyperPlaneList[i].hyperPlaneEquation[k] - unbiasedVector[k]) ** 2
+            #norm += (inputHyperPlaneList[i].hyperPlaneEquation[k]/inputHyperPlaneList[i].hyperPlaneEquation[1] -
+            #unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
+        norm = math.sqrt(norm)
+
+        inputHyperPlaneList[i].defenderUtility = norm
+    return inputHyperPlaneList
+
 
 def getOriginalHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], consumerPointList, unbiasedVector):
 
@@ -83,17 +109,20 @@ def getOriginalHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], co
 
         inputHyperPlaneList[i].pointSubscription, inputHyperPlaneList[i].adversaryUtility = \
             countSubscribersOfHyperplane(
-            inputHyperPlaneList[i], consumerPointList, 0)
+            inputHyperPlaneList[i], consumerPointList, ci)
 
         # L2 Norm:
         norm = 0
-        for k in range(len(inputHyperPlaneList[i].hyperPlaneEquation)-1): # Don't count the constant variable???  Not
+        currHyperPlane = inputHyperPlaneList[i]
+        for k in range(len(currHyperPlane.hyperPlaneEquation)-1): # Don't count the constant variable???  Not
             # counting now.
-            norm += (inputHyperPlaneList[i].hyperPlaneEquation[k] -
-            unbiasedVector[k]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
+            #TODO: It is possible that hyperplaneequation[1] == 0. It will crush.
+            norm += (currHyperPlane.hyperPlaneEquation[k] - unbiasedVector[k]) ** 2
+            #norm += (inputHyperPlaneList[i].hyperPlaneEquation[k]/inputHyperPlaneList[i].hyperPlaneEquation[1] -
+            #unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
         norm = math.sqrt(norm)
 
-        inputHyperPlaneList[i].defenderUtility = norm
+        currHyperPlane.defenderUtility = norm
     return inputHyperPlaneList
 
 def getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList: [[Hyperplane, Hyperplane]],
@@ -114,13 +143,15 @@ def getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList
 
         # L2 Norm:
         norm = 0
-        for k in range(
-                len(convertedHyperplaneList[i].hyperPlaneEquation) - 1):  # Don't count the constant variable???  Not
+        currHyperplane = convertedHyperplaneList[i]
+        for k in range(len(currHyperplane.hyperPlaneEquation) - 1):  # Don't count the constant variable???  Not
             # counting now.
-            norm += (convertedHyperplaneList[i].hyperPlaneEquation[k] -
-                     unbiasedVector[k]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
+            # TODO: It is possible that hyperplaneequation[1] == 0. It will crush.
+            norm += (currHyperplane.hyperPlaneEquation[k] - unbiasedVector[k]) ** 2
+            #norm += (convertedHyperplaneList[i].hyperPlaneEquation[k] / convertedHyperplaneList[i].hyperPlaneEquation[1] -
+            #         unbiasedVector[k] / unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
         norm = math.sqrt(norm)
-        convertedHyperplaneList[i].defenderUtility = norm
+        currHyperplane.defenderUtility = norm
     return convertedHyperplaneList
 
 
@@ -226,8 +257,8 @@ def movePoints(defenderHyperplane: Hyperplane, adversaryHyperplane:Hyperplane, i
     _, adversaryTotalSubscriptionNumber = countSubscribersOfHyperplane(adversaryHyperplane,
                                                                                finalMovedPointList, ci = ci)
 
-    if finalMovedPointList == inputPointList or finalMovedPointList == oringinalPointList:
-        return False, [], defenderTotalSubscriptionNumber
+    # if finalMovedPointList == inputPointList or finalMovedPointList == oringinalPointList:
+    #     return False, [], defenderTotalSubscriptionNumber
 
     if defenderTotalSubscriptionNumber >= adversaryTotalSubscriptionNumber and defenderTotalSubscriptionNumber > 0:
         return True, finalMovedPointList, defenderTotalSubscriptionNumber
@@ -267,13 +298,72 @@ def countSubscribersOfHyperplane(inputHyperplane:Hyperplane, inputPointList, ci)
         pointSubscribedList.append(pointSubscribed)
     return pointSubscribedList, totalSubscribeNumber
 
+def countSubscribersOfHyperplane2(inputHyperplane:Hyperplane, inputPointList, ci):  #Attension, when we don't need ci,
+    # set ci to be 0.
+    pointSubscribedList = []
+    totalSubscribeNumber = 0
+
+    for inputPoint in inputPointList:
+        pointSubscribed = singlePointSubscribeOfHyperplane2(inputHyperplane=inputHyperplane, inputPoint=inputPoint,
+                                                           ci = ci)
+        if pointSubscribed == 1:
+            totalSubscribeNumber += 1
+        pointSubscribedList.append(pointSubscribed)
+    return pointSubscribedList, totalSubscribeNumber
+
+#to be used by original generated hyperplanes, which have a constant term and do not need ci
+def singlePointSubscribeOfHyperplane2(inputHyperplane:Hyperplane, inputPoint, ci):
+    n = []
+    for j in range(len(inputPoint)):
+        n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
+    n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
+    n = sum(n)
+    if n>=0:
+        return 1
+    else:
+        return 0
+
+
+def debugsinglePointSubscribeOfHyperplane2(inputHyperplane:Hyperplane, inputPoint, ci):
+    n = []
+    for j in range(len(inputPoint)):
+        n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
+    n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
+    n = sum(n)
+    print(n)
+    #if n > 0 - precisionError:
+    if n>=0:
+        return 1
+    else:
+        return 0
+
+#to be used by converted hyperplane directions, which have no constant term other than ci
 def singlePointSubscribeOfHyperplane(inputHyperplane:Hyperplane, inputPoint, ci):
     n = []
     for j in range(len(inputPoint)):
         n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
-    n.append(inputHyperplane.hyperPlaneEquation[-1])
+    #n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
     n = sum(n)
-    if n >= ci:
+    n=n-ci
+    if n >=-1*precisionError and n<=0:
+        n=0
+    if n>=0:
+        return 1
+    else:
+        return 0
+
+def debugsinglePointSubscribeOfHyperplane(inputHyperplane:Hyperplane, inputPoint, ci):
+    n = []
+    for j in range(len(inputPoint)):
+        n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
+    #n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
+    n = sum(n)
+    n=n-ci
+    print(n)
+    if n >=-1*precisionError and n<=0:
+        n=0
+    #if n > 0 - precisionError:
+    if n>=0:
         return 1
     else:
         return 0

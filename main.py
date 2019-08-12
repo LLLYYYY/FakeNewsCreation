@@ -61,15 +61,46 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
             pointListUsedToGenerateHyperplane = []
             for i in comb:
                 pointListUsedToGenerateHyperplane.append(consumerPointList[i])
+            #perturb the point list. Will work only for 2D
+            #TODO: Fix for N dimensions
+            pointListUsedToGenerateHyperplane[0] = [pointListUsedToGenerateHyperplane[0][0]+ 0.001, pointListUsedToGenerateHyperplane[0][1]+0.001]
+            pointListUsedToGenerateHyperplane[1] = [pointListUsedToGenerateHyperplane[1][0]- 0.001, pointListUsedToGenerateHyperplane[1][1]-0.001]
+
             hyperplaneList.append(getHyperplaneEquation(pointListUsedToGenerateHyperplane))
         print("Finished getting hyperplane list. The size of the list is " + str(len(hyperplaneList)) + ".")
 
-        hyperplaneList = getOriginalHyperplaneListWithUtilities(hyperplaneList, consumerPointList,
+        hyperplaneList = getOriginalHyperplaneListWithUtilities2(hyperplaneList, consumerPointList,
                                                 unbiasedStoryHyperplane.hyperPlaneEquation)
 
-        print("Finished Getting Lines with Utilities")
+        #for hyperplane in hyperplaneList:
+        #    print(hyperplane.pointSubscription)
 
+        print("Finished Getting Lines with Utilities")
+        #TODO: Remove debug statements
+        #debug
+        iterRange = [i for i in range(numOfComsumerPoints)]
+        allComb = combinations(iterRange, pointDimension)
+        #debug
+        counter=0
         for hyperplane in hyperplaneList:
+            #debug
+            comb_counter=0
+            for comb in allComb:
+                if (comb_counter==counter):
+                    print("Current combination of points being considered: ")
+                    for nv in comb:
+                        print(consumerPointList[nv])
+                    break
+                comb_counter=comb_counter+1
+
+            counter=counter+1
+
+            #print(hyperplane.pointSubscription)
+            #print(hyperplane.hyperPlaneEquation)
+            for v in consumerPointList:
+                print(v)
+                debugsinglePointSubscribeOfHyperplane2(hyperplane, v, ci)
+            #debug
             try:
                 convertedHyperplane = hyperPlaneConversion(hyperplane, consumerPointList, storyVectorList)
                 originalConvertedHyperplaneMatchList.append([hyperplane, convertedHyperplane])
@@ -105,6 +136,12 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         plotHyperplaneList(consumerPointList, plotConvertedHyperplaneList, plotOutputDirectory, "figure2.png")
 
         print("Finished printing the original and converted hyperplane charts.")
+
+        # # After regenerating the hyperplane. Needs to recalculate the L2Norm.
+        # getHyperplaneListWithUtilities(hyperplaneList, consumerPointList, unbiasedStoryHyperplane.hyperPlaneEquation,
+        #                                inputStoryVector=storyVectorList, ci=ci)
+        #
+        # print("Finished Getting Lines with Utilities No2")
 
         hyperplaneList.sort(key=lambda pair: pair.adversaryUtility)
         print("Finished Sorting Lines.")

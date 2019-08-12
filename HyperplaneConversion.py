@@ -7,6 +7,12 @@ from cplex.exceptions.errors import *
 def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
 
     my_prob = cplex.Cplex()
+
+    my_prob.set_log_stream(None)
+    my_prob.set_error_stream(None)
+    my_prob.set_warning_stream(None)
+    my_prob.set_results_stream(None)
+
     my_prob.objective.set_sense(my_prob.objective.sense.maximize)
 
     my_obj = (len(xList)) * [0] # Not maximizing anything. No objective function.
@@ -46,12 +52,12 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
     my_rows.append([my_colnames, len(xList) * [1]]) #sum(aj) <= k
     my_rhs.append(k)
 
-    # print(my_rows)
-    # print(my_rhs)
-    # print(my_sense)
-    # print(my_colnames)
-    # print(my_rownames)
-    # sys.stdout.flush()
+    #print(my_rows)
+    #print(my_rhs)
+    #print(my_sense)
+    #print(my_colnames)
+    #print(my_rownames)
+    #sys.stdout.flush()
 
     my_prob.linear_constraints.add(lin_expr=my_rows, senses=my_sense, rhs=my_rhs, names=my_rownames)
     #for i in range(len(my_colnames)):
@@ -67,7 +73,7 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
         a = my_prob.solution.get_values()
         isAllZeros = True
         for j in range(len(xList)):
-            print("Column " + str(my_colnames[j]) + " " + str(j) + ", value = " + str(a[j]))
+            #print("Column " + str(my_colnames[j]) + " " + str(j) + ", value = " + str(a[j]))
             if a[j] != 0.0:
                 isAllZeros = False
 
@@ -79,30 +85,40 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
             temp = [a[j] * xList[j][l] for l in range(len(xList[j]))]#a_jx_j
             temp = [temp[l] / k for l in range(len(temp))]##(a_jx_j)/k
             generatedhyperplaneDirection = [l+p for l,p in zip(temp, generatedhyperplaneDirection)]
-        print("Generated hyperplane direction is: " + str(generatedhyperplaneDirection))
+        print("Consumer hyperplane is: " + str(consumerHyperplane.hyperPlaneEquation))
+        print("Generated hyperplane is: " + str(generatedhyperplaneDirection) + str(-1*ci))
 
         generatedHyperplane = Hyperplane(generatedhyperplaneDirection+[0], []) #ignored alpha. Alpha becommes 0.
 
-        # getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation,
-        #                                        xList, ci)
-        # if generatedHyperplane.pointSubscription != consumerHyperplane.pointSubscription:
-        #     raise ValueError("Error in hyperplane conversion code. CPLEX returned a_j values without error, but still the m_i "
-        #           "values do not match")
+        for point in vList:
+            print(point)
+            debugsinglePointSubscribeOfHyperplane(generatedHyperplane, point, ci)
+        #TODO: Conflicts of both version.
+        #getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation,xList, ci)
+        getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation)
+
+
+        print(consumerHyperplane.pointSubscription)
+        print(generatedHyperplane.pointSubscription)
+
+        if generatedHyperplane.pointSubscription != consumerHyperplane.pointSubscription:
+            raise ValueError("Error in hyperplane conversion code. CPLEX returned a_j values without error, but still the m_i "
+                  "values do not match")
         #print(generatedHyperplane.hyperPlaneEquation)
         #print("Generated Hyperplane's points subscription:" + str(generatedHyperplane.pointSubscription) + "\n\n\n\n")
         return generatedHyperplane
     else:
-        raise CplexSolverError("No Solution Exists. Cplex solution status not equals to " + str(my_prob.solution.get_status()))
+        raise CplexSolverError("No Solution Exists. Cplex solution status equals to " + str(my_prob.solution.get_status()))
 
 
 def testHyperPlaneConversion():
-    pointList = [[1, 1.1], [1,3], [3,1], [4,4]]
-    storyVectorList = [[1, 1.1], [1,2], [2,1], [4,4.1]]
-    hyperplane = getHyperplaneEquation([[1,1.1],[4, 4]])
+    pointList = [[1, 1], [-1,-2]]
+    storyVectorList = [[1, 0], [0,1]]
+    #TODO: Represents a hacky solution that will atleast work for 2d examples. Will need to think about N dimensions.
+    hyperplane = getHyperplaneEquation([[1+e,1+e],[-1-e, -2-e]])
     hyperplaneList = [hyperplane]
 
-    getOriginalHyperplaneListWithUtilities(hyperplaneList, pointList, getMeanHyperplane(pointList).hyperPlaneEquation,
-                                           storyVectorList, ci)
+    getOriginalHyperplaneListWithUtilities2(hyperplaneList, pointList, getMeanHyperplane(pointList).hyperPlaneEquation)
 
     print(hyperplane.hyperPlaneEquation)
     print(hyperplaneList[0].pointSubscription)
@@ -111,4 +127,11 @@ def testHyperPlaneConversion():
     except CplexSolverError:
         print("Failed to generate.")
 
-# testHyperPlaneConversion()
+    getOriginalHyperplaneListWithUtilities([convertedHyperplane], pointList, getMeanHyperplane(pointList).hyperPlaneEquation)
+
+    if convertedHyperplane.pointSubscription != hyperplane.pointSubscription:
+        raise ValueError(
+            "Error in hyperplane conversion code. CPLEX returned a_j values without error, but still the m_i "
+            "values do not match")
+
+#testHyperPlaneConversion()
