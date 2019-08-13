@@ -45,7 +45,7 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
 
         for j in range(len(xList)):
             n = [vList[i][l] * xList[j][l] for l in range(len(vList[i]))]
-            rowParameter.append(1 / k * sum(n))#coefficient of a_j
+            rowParameter.append(sum(n)/k)#coefficient of a_j
         # rowParameter.append(1)  # Parameter for Alpha.
         my_rows += 2 * [ [my_colnames, rowParameter] ]
 
@@ -63,14 +63,14 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
     #for i in range(len(my_colnames)):
     #    my_prob.variables.set_types( i , my_prob.variables.type.binary)
 
-    my_prob.write("/Users/sly/Downloads/FakeNewsOutput/file.lp")
+    # my_prob.write("/Users/sly/Downloads/FakeNewsOutput/file.lp")
     # my_prob.write("/Users/auy212-admin/Downloads/FakeNewsOutput/file.lp")
 
     my_prob.solve()
 
     print("The CPLEX status output is: " + str(my_prob.solution.get_status()))
 
-    if my_prob.solution.get_status() is 1:
+    if my_prob.solution.get_status() == 1:
         a = my_prob.solution.get_values()
         isAllZeros = True
         for j in range(len(xList)):
@@ -86,21 +86,21 @@ def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
             temp = [a[j] * xList[j][l] for l in range(len(xList[j]))]#a_jx_j
             temp = [temp[l] / k for l in range(len(temp))]##(a_jx_j)/k
             generatedhyperplaneDirection = [l+p for l,p in zip(temp, generatedhyperplaneDirection)]
-        print("Consumer hyperplane is: " + str(consumerHyperplane.hyperPlaneEquation))
-        print("Generated hyperplane is: " + str(generatedhyperplaneDirection) + str(-1*ci))
+        # print("Consumer hyperplane is: " + str(consumerHyperplane.hyperPlaneEquation))
+        # print("Generated hyperplane is: " + str(generatedhyperplaneDirection) + str(-1*ci))
 
         generatedHyperplane = Hyperplane(generatedhyperplaneDirection+[0], []) #ignored alpha. Alpha becommes 0.
 
         for point in vList:
-            print(point)
+            # print(point)
             debugsinglePointSubscribeOfHyperplane(generatedHyperplane, point, ci)
 
         #getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation,xList, ci)
         getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation)
 
 
-        print(consumerHyperplane.pointSubscription)
-        print(generatedHyperplane.pointSubscription)
+        # print(consumerHyperplane.pointSubscription)
+        # print(generatedHyperplane.pointSubscription)
 
         if generatedHyperplane.pointSubscription != consumerHyperplane.pointSubscription:
             raise ValueError("Error in hyperplane conversion code. CPLEX returned a_j values without error, but still the m_i "

@@ -97,7 +97,7 @@ def getOriginalHyperplaneListWithUtilities2(inputHyperPlaneList: [Hyperplane], c
         #for k in range(len(inputHyperPlaneList[i].hyperPlaneEquation)-1): # Don't count the constant variable???  Not
             # counting now.
         for k in range(len(currHyperplane)-1):
-            #TODO: It is possible that hyperplaneequation[1] == 0. It will crush.
+
             norm += (currHyperplane[k] - unbiasedVector2[k]) ** 2
             #norm += (inputHyperPlaneList[i].hyperPlaneEquation[k]/inputHyperPlaneList[i].hyperPlaneEquation[1] -
             #unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
@@ -141,7 +141,7 @@ def getOriginalHyperplaneListWithUtilities(inputHyperPlaneList: [Hyperplane], co
 
         for k in range(len(currHyperplane)-1): # Don't count the constant variable???  Not
             # counting now.
-            #TODO: It is possible that hyperplaneequation[1] == 0. It will crush.
+
             norm += (currHyperplane[k] - unbiasedVector2[k]) ** 2
             #norm += (inputHyperPlaneList[i].hyperPlaneEquation[k]/inputHyperPlaneList[i].hyperPlaneEquation[1] -
             #unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
@@ -184,7 +184,7 @@ def getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList
 
         for k in range(len(currHyperplane) - 1):  # Don't count the constant variable???  Not
             # counting now.
-            # TODO: It is possible that hyperplaneequation[1] == 0. It will crush.
+
             norm += (currHyperplane[k] - unbiasedVector2[k]) ** 2
             #norm += (convertedHyperplaneList[i].hyperPlaneEquation[k] / convertedHyperplaneList[i].hyperPlaneEquation[1] -
             #         unbiasedVector[k] / unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
@@ -328,7 +328,7 @@ def debugsinglePointSubscribeOfHyperplane2(inputHyperplane:Hyperplane, inputPoin
         n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
     n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
     n = sum(n)
-    print(n)
+    # print(n)
     #if n > 0 - precisionError:
     if n>=0:
         return 1
@@ -357,7 +357,7 @@ def debugsinglePointSubscribeOfHyperplane(inputHyperplane:Hyperplane, inputPoint
     #n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
     n = sum(n)
     n=n-ci
-    print(n)
+    # print(n)
     if n >=-1*precisionError and n<=0:
         n=0
     #if n > 0 - precisionError:
