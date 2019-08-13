@@ -328,7 +328,7 @@ def debugsinglePointSubscribeOfHyperplane2(inputHyperplane, inputPoint, ci):
         n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
     n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
     n = sum(n)
-    print(n)
+    # print(n)
     #if n > 0 - precisionError:
     if n>=0:
         return 1
@@ -357,7 +357,7 @@ def debugsinglePointSubscribeOfHyperplane(inputHyperplane, inputPoint, ci):
     #n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
     n = sum(n)
     n=n-ci
-    print(n)
+    # print(n)
     if n >=-1*precisionError and n<=0:
         n=0
     #if n > 0 - precisionError:

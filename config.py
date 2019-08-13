@@ -4,7 +4,7 @@ consumerPointNumber = 150
 
 
 dimensionList = [2]   #Must be a list!!!
-consumerTotalPointNumberList = [20, 50, 70, 100]  #Must be a list!!!
+consumerTotalPointNumberList = [20]  #Must be a list!!!
 numberOfStoryVectors = 150
 
 

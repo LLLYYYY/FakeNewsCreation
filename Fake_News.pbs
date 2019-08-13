@@ -8,5 +8,5 @@
 #PBS -A open
 module load python/2.7.14-anaconda5.0.1
 module load cplex/12.8.0
-python /storage/work/l/luy70/Fake_News/190/main.py  /storage/work/l/luy70/Fake_News/190/Results/
+python /storage/work/l/luy70/Fake_News/205070100/main.py  /storage/work/l/luy70/Fake_News/205070100/Results/
 

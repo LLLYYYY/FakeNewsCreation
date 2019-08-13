@@ -43,11 +43,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
     counter = 0
     while len(minimumDefenderUtilityList) <= 1 or ( len(minimumDefenderUtilityList) > 1 and abs(minimumDefenderUtilityList[-1] -
                                                                                minimumDefenderUtilityList[-2]) >
-                                                    epsilon and counter <= 100): # Cannot delete minimum defender
-        # utility list >
-        # 1.
-        # Will
-        # cause crash.
+                                                    epsilon and counter <= 100):
 
         counter += 1
 
@@ -55,7 +51,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         # matched hyperplane pairs.
 
         print("Running dimension " + str(pointDimension)+ " with point number: "+ str(numOfComsumerPoints))
-        print("The Unbiased story vector is " + str(unbiasedStoryHyperplane.hyperPlaneEquation))
+        # print("The Unbiased story vector is " + str(unbiasedStoryHyperplane.hyperPlaneEquation))
 
         plotOutputDirectory = os.path.join(outputDirectory, str(iter))
         if not os.path.isdir(plotOutputDirectory):
@@ -92,9 +88,10 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
             comb_counter=0
             for comb in allComb:
                 if (comb_counter==counter):
-                    print("Current combination of points being considered: ")
+                    # print("Current combination of points being considered: ")
                     for nv in comb:
-                        print(consumerPointList[nv])
+                        # print(consumerPointList[nv])
+                        pass
                     break
                 comb_counter=comb_counter+1
 
@@ -103,15 +100,15 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
             #print(hyperplane.pointSubscription)
             #print(hyperplane.hyperPlaneEquation)
             for v in consumerPointList:
-                print(v)
+                # print(v)
                 debugsinglePointSubscribeOfHyperplane2(hyperplane, v, ci)
             #debug
             try:
                 convertedHyperplane = hyperPlaneConversion(hyperplane, consumerPointList, storyVectorList)
                 originalConvertedHyperplaneMatchList.append([hyperplane, convertedHyperplane])
             except CplexSolverError as e:
-                print("\n\n\n\n\n\n\n\n Failed to generated hyperplane.")
-                print("Error message: " + str(e) + "\n\n\n\n\n\n")
+                print("Failed to generated hyperplane.")
+                print("Error message: " + str(e) + "\n\n\n\n\n\n\n\n\n")
                 continue
 
         print("Finished converting hyperplanes.  The size of the convert hyperplanelist is:" + str(len(
