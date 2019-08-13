@@ -64,7 +64,7 @@ def hyperPlaneConversion(consumerHyperplane, vList, xList):
     #for i in range(len(my_colnames)):
     #    my_prob.variables.set_types( i , my_prob.variables.type.binary)
 
-    my_prob.write("/Users/sly/Downloads/FakeNewsOutput/file.lp")
+    # my_prob.write("/Users/sly/Downloads/FakeNewsOutput/file.lp")
     # my_prob.write("/Users/auy212-admin/Downloads/FakeNewsOutput/file.lp")
 
     my_prob.solve()
