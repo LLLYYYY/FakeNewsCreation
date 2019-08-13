@@ -1,0 +1,12 @@
+#!/bin/sh
+####  PBS preamble
+
+# Change the number of cores (ppn=1), amount of memory, and walltime:
+#PBS -l nodes=1:ppn=16:lcivybridge,walltime=48:00:00
+
+# Change "example_flux" to the name of your Flux allocation:
+#PBS -A open
+module load python/2.7.14-anaconda5.0.1
+module load cplex/12.8.0
+python /storage/work/l/luy70/Fake_News/190/main.py  /storage/work/l/luy70/Fake_News/190/Results/
+
