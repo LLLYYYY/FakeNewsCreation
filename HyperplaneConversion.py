@@ -4,7 +4,7 @@ from DataStructure import *
 from Multi_Dimension import *
 from cplex.exceptions.errors import *
 
-def hyperPlaneConversion(consumerHyperplane: Hyperplane, vList, xList):
+def hyperPlaneConversion(consumerHyperplane, vList, xList):
 
     my_prob = cplex.Cplex()
 

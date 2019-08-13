@@ -4,7 +4,8 @@ consumerPointNumber = 150
 
 
 dimensionList = [2]   #Must be a list!!!
-consumerTotalPointNumberList = [50]  #Must be a list!!!
+consumerTotalPointNumberList = [20, 50, 70, 100]  #Must be a list!!!
+numberOfStoryVectors = 150
 
 
 # For equation to convert the hyperplane.
@@ -16,7 +17,7 @@ M = 100000
 precisionError=1e-10
 
 
-epsilon = 0.001  # Use for determine the minimum l2norm change.
+epsilon = 0.0001  # Use for determine the minimum l2norm change.
 
 longestMovingDistance = 0.4
 singleTimeMovingDistance = 0.2

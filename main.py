@@ -1,17 +1,18 @@
+import sys
+sys.path.append('/opt/aci/sw/cplex/12.8.0/cplex/python/2.7/x86-64_linux')  # For server usage.
+
 from Multi_Dimension import *
 from HyperplaneConversion import *
 from config import *
 import numpy as np
 import matplotlib.pyplot as plt
 from itertools import combinations
-import sys
 import os
 import timeit
 from cplex.exceptions.errors import *
 plt.switch_backend('agg')
 
-def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfStoryVectors, ci, runCount = 0) -> (
-        bool, int):
+def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfStoryVectors, ci, runCount = 0):
     """Parameter input: Output parameter. Return run time."""
     #Already changed to storyVector hyperplane calculation.
 
@@ -39,11 +40,16 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
     for i in range(numberOfStoryVectors):
         storyVectorList.append([ 2*x-1 for x in np.random.ranf(pointDimension).tolist()])
     unbiasedStoryHyperplane = getMeanHyperplane(storyVectorList)
-
+    counter = 0
     while len(minimumDefenderUtilityList) <= 1 or ( len(minimumDefenderUtilityList) > 1 and abs(minimumDefenderUtilityList[-1] -
                                                                                minimumDefenderUtilityList[-2]) >
-                                                    epsilon): # Cannot delete minimum defender utility list > 1. Will
+                                                    epsilon and counter <= 100): # Cannot delete minimum defender
+        # utility list >
+        # 1.
+        # Will
         # cause crash.
+
+        counter += 1
 
         originalConvertedHyperplaneMatchList = []  # Used to store original and converted list. The element of the list is
         # matched hyperplane pairs.
@@ -316,17 +322,17 @@ outputDirectory = sys.argv[1]
 if not os.path.isdir(outputDirectory):
     raise Exception("Output Directory not accessible.")
 
-for dimemsion in dimensionList:
-    # isSucceed = False
-    runtimeList = []
-    # while not isSucceed or len(runtimeList) <= 3:
-    while len(runtimeList) <= 3:
-        isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=dimemsion,
-                                           numOfComsumerPoints=20, numberOfStoryVectors=50, ci = ci, runCount=len(
-            runtimeList))
-        # if isSucceed:
-        runtimeList.append(runtime)
-    dimensionRunTimeList.append(sum(runtimeList)/len(runtimeList))
+# for dimemsion in dimensionList:
+#     # isSucceed = False
+#     runtimeList = []
+#     # while not isSucceed or len(runtimeList) <= 3:
+#     while len(runtimeList) <= 3:
+#         isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=dimemsion,
+#                                            numOfComsumerPoints=20, numberOfStoryVectors=50, ci = ci, runCount=len(
+#             runtimeList))
+#         # if isSucceed:
+#         runtimeList.append(runtime)
+#     dimensionRunTimeList.append(sum(runtimeList)/len(runtimeList))
 
 for pointNum in consumerTotalPointNumberList:
     # isSucceed = False
@@ -334,23 +340,13 @@ for pointNum in consumerTotalPointNumberList:
     # while not isSucceed or len(runtimeList) <= 10:
     while len(runtimeList) <= 3:
         isSucceed, runtime = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2, numOfComsumerPoints
-        =pointNum, numberOfStoryVectors= 50, ci=ci,
+        =pointNum, numberOfStoryVectors= numberOfStoryVectors, ci=ci,
                                            runCount=len(runtimeList))
         # if isSucceed:
         runtimeList.append(runtime)
     pointNumRunTimeList.append(sum(runtimeList)/len(runtimeList))
 
-# # For Debug Purpose:::::::###########
-# for pointNum in pointNumList:
-#     isSucceed = False
-#     runtimeList = []
-#     while len(runtimeList) <= 10:
-#
-#         isSucceed, runtime = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2, numOfPoint=pointNum,
-#                                            runCount=len(runtimeList))
-#         runtimeList.append(runtime)
-#     pointNumRunTimeList.append(sum(runtimeList)/len(runtimeList))
-
+print(pointNumRunTimeList)
 # fig = plt.figure()
 # plt.plot( dimensionList , dimensionRunTimeList)
 # plt.savefig(os.path.join(outputDirectory, "Dimension_VS_Runtime.png"))
