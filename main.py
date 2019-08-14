@@ -64,14 +64,16 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 pointListUsedToGenerateHyperplane.append(consumerPointList[i])
             #perturb the point list. Will work only for 2D
             #TODO: Fix for N dimensions
-            pointListUsedToGenerateHyperplane[0] = [pointListUsedToGenerateHyperplane[0][0]+ 0.001, pointListUsedToGenerateHyperplane[0][1]+0.001]
-            pointListUsedToGenerateHyperplane[1] = [pointListUsedToGenerateHyperplane[1][0]- 0.001, pointListUsedToGenerateHyperplane[1][1]-0.001]
+            pointListUsedToGenerateHyperplane[0] = [pointListUsedToGenerateHyperplane[0][0]+ 0.00001,
+                                                    pointListUsedToGenerateHyperplane[0][1]+0.00001]
+            pointListUsedToGenerateHyperplane[1] = [pointListUsedToGenerateHyperplane[1][0]- 0.00001,
+                                                    pointListUsedToGenerateHyperplane[1][1]-0.00001]
 
             hyperplaneList.append(getHyperplaneEquation(pointListUsedToGenerateHyperplane))
         print("Finished getting hyperplane list. The size of the list is " + str(len(hyperplaneList)) + ".")
 
-        hyperplaneList = getOriginalHyperplaneListWithUtilities2(hyperplaneList, consumerPointList,
-                                                unbiasedStoryHyperplane.hyperPlaneEquation)
+        hyperplaneList = getOriginalHyperplaneListWithUtilities(hyperplaneList, consumerPointList,
+                                                                unbiasedStoryHyperplane.hyperPlaneEquation)
 
         #for hyperplane in hyperplaneList:
         #    print(hyperplane.pointSubscription)
@@ -98,9 +100,9 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
 
             #print(hyperplane.pointSubscription)
             #print(hyperplane.hyperPlaneEquation)
-            for v in consumerPointList:
-                # print(v)
-                debugsinglePointSubscribeOfHyperplane2(hyperplane, v, ci)
+            # for v in consumerPointList:
+            #     # print(v)
+            #     debugsinglePointSubscribeOfHyperplane2(hyperplane, v, ci)
             #debug
             try:
                 convertedHyperplane = hyperPlaneConversion(hyperplane, consumerPointList, storyVectorList)
