@@ -43,12 +43,12 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
     for i in range(numberOfStoryVectors):
         storyVectorList.append([ 2*x-1 for x in np.random.ranf(pointDimension).tolist()])
     unbiasedStoryHyperplane = getMeanHyperplane(storyVectorList)
-    counter = 0
+    whileCounter = 0
     while len(minimumDefenderUtilityList) <= 1 or ( len(minimumDefenderUtilityList) > 1 and abs(minimumDefenderUtilityList[-1] -
                                                                                minimumDefenderUtilityList[-2]) >
-                                                    epsilon and counter <= 100):
+                                                    epsilon and whileCounter <= 100):
 
-        counter += 1
+        whileCounter += 1
 
         originalConvertedHyperplaneMatchList = []  # Used to store original and converted list. The element of the list is
         # matched hyperplane pairs.
@@ -110,8 +110,8 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 convertedHyperplane = hyperPlaneConversion(hyperplane, consumerPointList, storyVectorList)
                 originalConvertedHyperplaneMatchList.append([hyperplane, convertedHyperplane])
             except CplexSolverError as e:
-                print("Failed to generated hyperplane.")
-                print("Error message: " + str(e) + "\n\n\n\n\n\n\n\n\n")
+                # print("Failed to generated hyperplane.")
+                # print("Error message: " + str(e) + "\n\n\n\n\n\n\n\n\n")
                 continue
 
         print("Finished converting hyperplanes.  The size of the convert hyperplanelist is:" + str(len(
@@ -137,6 +137,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         plotConvertedHyperplaneList = []
         if len(originalConvertedHyperplaneMatchList) < 3:
             print("Failed to convert enough hyperplane.")
+            #TODO: Should raise an error.
             break
         for p in range(3):
             matchedHyperplane = originalConvertedHyperplaneMatchList[p]
@@ -181,9 +182,11 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                                  "figure3.png")
 
         # Now iterate the hyperplane list and try to move points.
+        isFound = False
         for i in range(len(hyperplaneList)):
-            if hyperplaneList[i] == adversaryHyperplane:
+            if hyperplaneList[i].hyperPlaneEquation == adversaryHyperplane.hyperPlaneEquation:
                 print("The defender hyperplane and the adversary hyperplane matched. List number: " + str(i))
+                isFound = False
                 break
 
             #TODO: FIX MOVE POINTS.
@@ -210,6 +213,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
             if isSucceed == False:
                 continue
             else:
+                isFound = True
                 if movedPointList == consumerPointList:
                     print("Points not moving.")
                     raise Exception("Points not moving. But the code should not reach this point. Error.")
@@ -256,6 +260,8 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         iter += 1
         minimumDefenderUtilityList.append(smallestL2Norm)
         adversaryMaximumUtilityList.append(defenderHyperplane.adversaryUtility)
+        if isFound == False:
+            break
         #end outer while loop.
 
     functionEndTime = timeit.default_timer()
@@ -390,7 +396,7 @@ for pointNum in consumerTotalPointNumberList:
     # isSucceed = False
     runtimeList = []
     # while not isSucceed or len(runtimeList) <= 10:
-    while len(runtimeList) <= 3:
+    while len(runtimeList) <= maximumRunCountForEachSituation:
         isSucceed, runtime = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2, numOfComsumerPoints
         =pointNum, numberOfStoryVectors= numberOfStoryVectors, ci=ci,
                                            runCount=len(runtimeList))

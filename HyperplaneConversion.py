@@ -69,7 +69,7 @@ def hyperPlaneConversion(consumerHyperplane, vList, xList):
 
     my_prob.solve()
 
-    print("The CPLEX status output is: " + str(my_prob.solution.get_status()))
+    # print("The CPLEX status output is: " + str(my_prob.solution.get_status()))
 
     if my_prob.solution.get_status() == 1:
         a = my_prob.solution.get_values()

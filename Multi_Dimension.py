@@ -255,8 +255,8 @@ def movePoints(defenderHyperplane, adversaryHyperplane, inputPointList, oringina
     _, adversaryTotalSubscriptionNumber = countSubscribersOfHyperplane(adversaryHyperplane,
                                                                                finalMovedPointList, ci = ci)
 
-    # if finalMovedPointList == inputPointList or finalMovedPointList == oringinalPointList:
-    #     return False, [], defenderTotalSubscriptionNumber
+    if finalMovedPointList == inputPointList or finalMovedPointList == oringinalPointList:
+        return False, [], defenderTotalSubscriptionNumber
 
     if defenderTotalSubscriptionNumber >= adversaryTotalSubscriptionNumber and defenderTotalSubscriptionNumber > 0:
         return True, finalMovedPointList, defenderTotalSubscriptionNumber

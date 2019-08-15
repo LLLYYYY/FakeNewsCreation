@@ -16,8 +16,9 @@ M = 100000
 
 precisionError=1e-10
 
+maximumRunCountForEachSituation = 20
 
-epsilon = 0.0001  # Use for determine the minimum l2norm change.
+epsilon = 0.01  # Use for determine the minimum l2norm change.
 
 longestMovingDistance = 0.4
 singleTimeMovingDistance = 0.2
