@@ -117,8 +117,13 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
 
         #The function will make sure mi is the same. Also, mi calculate is bigger than ci
         # not 0,
-        hyperplaneList = getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList,
+        try:
+            hyperplaneList = getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList,
                                                                  consumerPointList, unbiasedStoryHyperplane.hyperPlaneEquation, ci)
+        except ValueError as e:
+            functionEndTime = timeit.default_timer()
+            print("Error getting converted Hyperplane. Error Message: " + e)
+            return False, functionEndTime - functionStartTime
         print("Finished generating converted hyperplane with utilities.")
 
 
@@ -135,9 +140,9 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
             plotOriginalHyperplaneList.append(matchedHyperplane[0])
             plotConvertedHyperplaneList.append(matchedHyperplane[1])
         plotHyperplaneList(consumerPointList, plotOriginalHyperplaneList, unbiasedStoryHyperplane,
-                           plotOutputDirectory, "figure1.png")
+                           plotOutputDirectory, "original hyperplane with consumer points", "figure1.png")
         plotHyperplaneList(consumerPointList, plotConvertedHyperplaneList, unbiasedStoryHyperplane,
-                           plotOutputDirectory, "figure2.png")
+                           plotOutputDirectory, "converted hyperplane with consumer points", "figure2.png")
 
         print("Finished printing the original and converted hyperplane charts.")
 
@@ -166,7 +171,11 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         if pointDimension == 2:
             plotDefAdvHyperplane(consumerPointList, hyperplaneList[0].hyperPlaneEquation,
                                  adversaryHyperplane.hyperPlaneEquation,
-                                 unbiasedStoryHyperplane.hyperPlaneEquation, plotOutputDirectory, "figure3.png")
+                                 unbiasedStoryHyperplane.hyperPlaneEquation, plotOutputDirectory, "The Defender and "
+                                                                                                  "the Adversary "
+                                                                                                  "preference "
+                                                                                                  "hyperplane",
+                                 "figure3.png")
 
         # Now iterate the hyperplane list and try to move points.
         for i in range(len(hyperplaneList)):
@@ -215,14 +224,17 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 if pointDimension == 2:
                     plotDefAdvHyperplane(consumerPointList, defenderHyperplane.hyperPlaneEquation,
                                          adversaryHyperplane.hyperPlaneEquation, unbiasedStoryHyperplane.hyperPlaneEquation,
-                                         plotOutputDirectory, "figure4.png")
+                                         plotOutputDirectory, "The defender hyperplane that can do better than the "
+                                                              "adversary one",
+                                         "figure4.png")
 
                 consumerPointList = movedPointList
 
                 if pointDimension == 2:
                     plotDefAdvHyperplane(consumerPointList, defenderHyperplane.hyperPlaneEquation,
                                          adversaryHyperplane.hyperPlaneEquation, unbiasedStoryHyperplane.hyperPlaneEquation,
-                                         plotOutputDirectory, "figure5.png")
+                                         plotOutputDirectory, "The defender and adversary hyperplane with moved "
+                                                              "points" ,"figure5.png")
                 break
 
         plt.show()
@@ -240,25 +252,31 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
 
         iter += 1
         minimumDefenderUtilityList.append(smallestL2Norm)
-        adversaryMaximumUtilityList.append(adversaryMaximumUtility)
+        adversaryMaximumUtilityList.append(defenderHyperplane.adversaryUtility)
         #end outer while loop.
 
     functionEndTime = timeit.default_timer()
 
     fig = plt.figure()
     plt.plot([iteration + 1 for iteration in range(iter)], minimumDefenderUtilityList)
+    plt.xlabel("Iteration of moved points and defender lists.")
+    plt.ylabel("The Defender Utilities of Defender Hyperplane. (L2Norm)")
+    plt.title("Iter_VS_DefU")
     plt.savefig(os.path.join(outputDirectory, "Iter_VS_Def.png"))
     plt.close(fig)
 
     fig = plt.figure()
     plt.plot([iteration + 1 for iteration in range(iter)], adversaryMaximumUtilityList)
+    plt.xlabel("Iteration of moved points and defender lists.")
+    plt.ylabel("The Adversary Utilities of Defender Hyperplane.(Point subscriptions)")
+    plt.title("Iter_VS_AdvU")
     plt.savefig(os.path.join(outputDirectory, "Iter_VS_Adv.png"))
     plt.close(fig)
 
     return True, (functionEndTime - functionStartTime)
 
 def plotDefAdvHyperplane(pointList, defenderHyperplaneEquation, adversaryHyperplaneEquation,
-                         unbiasedStoryEquation, plotOutputDirectory, plotFileName):
+                         unbiasedStoryEquation, plotOutputDirectory, title, plotFileName):
     """Attension: Only works in two dimension..."""
     if not pointList:
         if len(pointList[0]) != 2:
@@ -286,17 +304,25 @@ def plotDefAdvHyperplane(pointList, defenderHyperplaneEquation, adversaryHyperpl
         -unbiasedStoryEquation[0] / unbiasedStoryEquation[1] - unbiasedStoryEquation[
             2] / unbiasedStoryEquation[1]]
 
-    plt.plot(defenderPlotLineX, defenderPlotLineY)
-    plt.plot(adversaryPlotLineX, adversaryPlotLineY)
-    plt.plot(unbiasedStoryVectorPlotLineX, unbiasedStoryVectorPlotLiney)
-    plt.xlim(-3,3)
-    plt.ylim(-3,3)
+    defenderPlot, = plt.plot(defenderPlotLineX, defenderPlotLineY)
+    adversaryPlot, = plt.plot(adversaryPlotLineX, adversaryPlotLineY)
+    unbiasedStoryVectorPlot, = plt.plot(unbiasedStoryVectorPlotLineX, unbiasedStoryVectorPlotLiney)
+    plt.legend([defenderPlot, adversaryPlot, unbiasedStoryVectorPlot], ["Defender Hyperplane", "Adversary "
+                                                                                               "Hyperplane",
+                                                                        "Unbiased Story Vector"])
+
+
+    plt.xlim(-1.5,1.5)
+    plt.ylim(-1.5,1.5)
+    plt.xlabel("x axis in the coordinate system")
+    plt.ylabel("y axis in the coordinate system")
+    plt.title(title)
     plt.savefig(os.path.join(plotOutputDirectory, plotFileName))
     plt.close(fig)
 
     return
 
-def plotHyperplaneList(pointList, hyperplaneList, unbiasedStoryHyperplane,plotOutputDirectory, plotFileName):
+def plotHyperplaneList(pointList, hyperplaneList, unbiasedStoryHyperplane, plotOutputDirectory, title, plotFileName):
     """Attension: Only works in two dimension..."""
     if not pointList:
         if len(pointList[0]) != 2:
@@ -321,11 +347,16 @@ def plotHyperplaneList(pointList, hyperplaneList, unbiasedStoryHyperplane,plotOu
         2] / unbiasedStoryEquation[1], -unbiasedStoryEquation[0] / unbiasedStoryEquation[1] -
                           unbiasedStoryEquation[
                               2] / unbiasedStoryEquation[1]])
-
+    plots = []
     for i in range(len(plotLineListX)):
-        plt.plot(plotLineListX[i],plotLineListY[i])
-    plt.xlim(-3, 3)
-    plt.ylim(-3, 3)
+        plot, = plt.plot(plotLineListX[i],plotLineListY[i])
+        plots.append(plot)
+    plt.xlim(-1.5, 1.5)
+    plt.ylim(-1.5, 1.5)
+    plt.xlabel("x axis in the coordinate system")
+    plt.ylabel("y axis in the coordinate system")
+    plt.title(title)
+    plt.legend(plots, ["First Hyperplane", "Second Hyperplane", "Third Hyperplane", "Unbiased Story Vector"])
     plt.savefig(os.path.join(plotOutputDirectory, plotFileName))
     plt.close(fig)
 
