@@ -98,19 +98,19 @@ def hyperPlaneConversion(consumerHyperplane, vList, xList):
 
         #getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation,xList, ci)
         # getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation)
-        originalConvertedHyperplane = []
-        originalConvertedHyperplane.append([consumerHyperplane, generatedHyperplane])
-        generatedHyperplaneList = getConvertedHyperplaneListWithUtilities(originalConvertedHyperplane, vList,
-                                                                          getMeanHyperplane(xList).hyperPlaneEquation,
-                                                                          ci)
-        generatedHyperplane = generatedHyperplaneList[0]
+        # originalConvertedHyperplane = []
+        # originalConvertedHyperplane.append([consumerHyperplane, generatedHyperplane])
+        # generatedHyperplaneList = getConvertedHyperplaneListWithUtilities(originalConvertedHyperplane, vList,
+        #                                                                   getMeanHyperplane(xList).hyperPlaneEquation,
+        #                                                                   ci)
+        # generatedHyperplane = generatedHyperplaneList[0]
 
         # print(consumerHyperplane.pointSubscription)
         # print(generatedHyperplane.pointSubscription)
 
-        if generatedHyperplane.pointSubscription != consumerHyperplane.pointSubscription:
-            raise ValueError("Error in hyperplane conversion code. CPLEX returned a_j values without error, but still the m_i "
-                  "values do not match")
+        # if generatedHyperplane.pointSubscription != consumerHyperplane.pointSubscription:
+        #     raise ValueError("Error in hyperplane conversion code. CPLEX returned a_j values without error, but still the m_i "
+        #           "values do not match")
         #print(generatedHyperplane.hyperPlaneEquation)
         #print("Generated Hyperplane's points subscription:" + str(generatedHyperplane.pointSubscription) + "\n\n\n\n")
         return generatedHyperplane

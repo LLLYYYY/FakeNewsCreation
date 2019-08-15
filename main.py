@@ -360,8 +360,8 @@ for pointNum in consumerTotalPointNumberList:
         isSucceed, runtime = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2, numOfComsumerPoints
         =pointNum, numberOfStoryVectors= numberOfStoryVectors, ci=ci,
                                            runCount=len(runtimeList))
-        # if isSucceed:
-        runtimeList.append(runtime)
+        if isSucceed:
+            runtimeList.append(runtime)
     pointNumRunTimeList.append(sum(runtimeList)/len(runtimeList))
 
 print(pointNumRunTimeList)
