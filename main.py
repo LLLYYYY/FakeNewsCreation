@@ -33,6 +33,8 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
     minimumDefenderUtilityList = []
     adversaryMaximumUtilityList = []
     adversaryMaximumUtility = 0
+    adversaryHyperplane = Hyperplane([], [])
+    defenderHyperplane = Hyperplane([], [])
 
     iter = 0  # Used to distinguish different iterations of the same consumer point number and dimension.
 
@@ -117,7 +119,6 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         print("Finished converting hyperplanes.  The size of the convert hyperplanelist is:" + str(len(
             originalConvertedHyperplaneMatchList)) + ".")
 
-
         #The function will make sure mi is the same. Also, mi calculate is bigger than ci
         # not 0,
         try:
@@ -126,10 +127,11 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         except ValueError as e:
             functionEndTime = timeit.default_timer()
             print("Error getting converted Hyperplane. Error Message: " + str(e))
-            return False, functionEndTime - functionStartTime
+            return False, functionEndTime - functionStartTime, 0
         print("Finished generating converted hyperplane with utilities.")
 
-
+        if whileCounter > 1 and defenderHyperplane != Hyperplane([], []):
+            hyperplaneList.append(defenderHyperplane)
 
 
         # Now plot the original and converted hyperplane.
@@ -162,8 +164,6 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
 
 
         #Find the best strategy for adversary.
-        adversaryHyperplane = Hyperplane([], [])
-        defenderHyperplane = Hyperplane([], [])
         for hyperplane in hyperplaneList:
             if hyperplane.adversaryUtility > adversaryHyperplane.adversaryUtility:
                 adversaryHyperplane = hyperplane
@@ -282,7 +282,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
     plt.savefig(os.path.join(outputDirectory, "Iter_VS_Adv.png"))
     plt.close(fig)
 
-    return True, (functionEndTime - functionStartTime)
+    return True, (functionEndTime - functionStartTime), iteration+1
 
 def plotDefAdvHyperplane(pointList, defenderHyperplaneEquation, adversaryHyperplaneEquation,
                          unbiasedStoryEquation, plotOutputDirectory, title, plotFileName):
@@ -391,20 +391,24 @@ if not os.path.isdir(outputDirectory):
 #         # if isSucceed:
 #         runtimeList.append(runtime)
 #     dimensionRunTimeList.append(sum(runtimeList)/len(runtimeList))
-
+iterationNumberList = []
 for pointNum in consumerTotalPointNumberList:
     # isSucceed = False
     runtimeList = []
+
     # while not isSucceed or len(runtimeList) <= 10:
     while len(runtimeList) <= maximumRunCountForEachSituation:
-        isSucceed, runtime = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2, numOfComsumerPoints
+        isSucceed, runtime, iteration = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2,
+                                                   numOfComsumerPoints
         =pointNum, numberOfStoryVectors= numberOfStoryVectors, ci=ci,
                                            runCount=len(runtimeList))
         if isSucceed:
             runtimeList.append(runtime)
+            iterationNumberList.append(iteration)
     pointNumRunTimeList.append(sum(runtimeList)/len(runtimeList))
 
 print(pointNumRunTimeList)
+print(iterationNumberList)
 # fig = plt.figure()
 # plt.plot( dimensionList , dimensionRunTimeList)
 # plt.savefig(os.path.join(outputDirectory, "Dimension_VS_Runtime.png"))
