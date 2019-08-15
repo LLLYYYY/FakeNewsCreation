@@ -11,6 +11,9 @@ import os
 import timeit
 from cplex.exceptions.errors import *
 plt.switch_backend('agg')
+plt.rcParams['figure.figsize'] = (10.0, 8.0)
+plt.rcParams['savefig.dpi'] = 300
+plt.rcParams['figure.dpi'] = 300
 
 def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfStoryVectors, ci, runCount = 0):
     """Parameter input: Output parameter. Return run time."""
@@ -122,7 +125,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                                                                  consumerPointList, unbiasedStoryHyperplane.hyperPlaneEquation, ci)
         except ValueError as e:
             functionEndTime = timeit.default_timer()
-            print("Error getting converted Hyperplane. Error Message: " + e)
+            print("Error getting converted Hyperplane. Error Message: " + str(e))
             return False, functionEndTime - functionStartTime
         print("Finished generating converted hyperplane with utilities.")
 
