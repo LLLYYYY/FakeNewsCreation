@@ -18,6 +18,14 @@ def getMeanHyperplane(inputStoryVectorList):
         n /= len(inputStoryVectorList)
         meanPoint.append(n)
 
+    isAllZeros = True
+    for n in meanPoint:
+        if n != 0:
+            isAllZeros = False
+
+    if isAllZeros == True:
+        raise ValueError("The unbiased vector contains all zeros parameters.")
+
     meanHyperplane = Hyperplane(meanPoint+[0])
     return meanHyperplane
 
@@ -40,19 +48,20 @@ def getHyperplaneEquation(pointList):
     hyperplaneEauation.append(-1)
 
 
-    if hyperplaneEauation[1] < 0:
-        hyperplaneEauation = [-x for x in hyperplaneEauation]
-
-    if hyperplaneEauation[1] == 0:
-        raise ValueError("Hyperplane parallel to the y axis. Error!")
-    else:
-        devider = hyperplaneEauation[1]
-        hyperplaneEauation = [x/devider for x in hyperplaneEauation]
+    # if hyperplaneEauation[1] < 0:
+    #     hyperplaneEauation = [-x for x in hyperplaneEauation]
+    #
+    # if hyperplaneEauation[1] == 0:
+    #     raise ValueError("Hyperplane parallel to the y axis. Error!")
+    # else:
+    #     devider = hyperplaneEauation[1]
+    #     hyperplaneEauation = [x/devider for x in hyperplaneEauation]
 
     outputHyperplaneEquation = Hyperplane(hyperPlaneEquation = hyperplaneEauation)
     return outputHyperplaneEquation
 
 def getOrthogonalUnitVector(inputHyperplane):
+    """The return vector is a unit vector."""
     orthogonalVector = inputHyperplane.hyperPlaneEquation[:-1]
     meg = math.sqrt(sum([x**2 for x in orthogonalVector]))
 
@@ -76,34 +85,37 @@ def getOriginalHyperplaneListWithUtilities2(inputHyperPlaneList, consumerPointLi
             inputHyperPlaneList[i], consumerPointList, ci)
 
         # L2 Norm:
-        # TODO: Should not change into the unit vector.
 
         norm = 0
 
         #get unit vector for unbiased vector and hyperplaneEquation
         # Change the normal vector to unit vector.
-        unbiasedVector2 = unbiasedVector
-        unbiasedVecMagnitude = (sum([x ** 2 for x in unbiasedVector[:-1]])) ** 0.5
-        if unbiasedVecMagnitude != 0:
-             unbiasedVector2 = [x/unbiasedVecMagnitude for x in unbiasedVector]
-        else:
-             raise ValueError("Getting a all zeros hyperplane.")
+        # unbiasedVector2 = unbiasedVector
+        # unbiasedVecMagnitude = (sum([x ** 2 for x in unbiasedVector[:-1]])) ** 0.5
+        # if unbiasedVecMagnitude != 0:
+        #      unbiasedVector2 = [x/unbiasedVecMagnitude for x in unbiasedVector]
+        # else:
+        #      raise ValueError("Getting a all zeros hyperplane.")
 
         # Change the hyperplane vector to unit vector.
-        currHyperplane = inputHyperPlaneList[i].hyperPlaneEquation
-        hyperplaneMagnitude = (sum([x ** 2 for x in inputHyperPlaneList[i].hyperPlaneEquation[:-1]])) ** 0.5
-        if hyperplaneMagnitude != 0:
-            currHyperplane = [x / hyperplaneMagnitude for x in inputHyperPlaneList[i].hyperPlaneEquation]
-        else:
-            raise ValueError("Getting a all zeros hyperplane.")
+        # currHyperplane = inputHyperPlaneList[i].hyperPlaneEquation
+        # hyperplaneMagnitude = (sum([x ** 2 for x in inputHyperPlaneList[i].hyperPlaneEquation[:-1]])) ** 0.5
+        # if hyperplaneMagnitude != 0:
+        #     currHyperplane = [x / hyperplaneMagnitude for x in inputHyperPlaneList[i].hyperPlaneEquation]
+        # else:
+        #     raise ValueError("Getting a all zeros hyperplane.")
 
         #for k in range(len(inputHyperPlaneList[i].hyperPlaneEquation)-1): # Don't count the constant variable???  Not
             # counting now.
+        # for k in range(len(currHyperplane)-1):
+        #
+        #     norm += (currHyperplane[k] - unbiasedVector2[k]) ** 2
+        #     #norm += (inputHyperPlaneList[i].hyperPlaneEquation[k]/inputHyperPlaneList[i].hyperPlaneEquation[1] -
+        #     #unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
+        # norm = math.sqrt(norm)
+        currHyperplane = inputHyperPlaneList[i].hyperPlaneEquation
         for k in range(len(currHyperplane)-1):
-
-            norm += (currHyperplane[k] - unbiasedVector2[k]) ** 2
-            #norm += (inputHyperPlaneList[i].hyperPlaneEquation[k]/inputHyperPlaneList[i].hyperPlaneEquation[1] -
-            #unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
+            norm += (currHyperplane[k] - unbiasedVector[k]) ** 2
         norm = math.sqrt(norm)
 
         inputHyperPlaneList[i].defenderUtility = norm
@@ -127,27 +139,24 @@ def getOriginalHyperplaneListWithUtilities(inputHyperPlaneList, consumerPointLis
         norm = 0
         # get unit vector for unbiased vector and hyperplaneEquation
         # Change the normal vector to unit vector.
-        unbiasedVector2 = unbiasedVector
-        unbiasedVecMagnitude = (sum([x ** 2 for x in unbiasedVector[:-1]])) ** 0.5
-        if unbiasedVecMagnitude != 0:
-            unbiasedVector2 = [x / unbiasedVecMagnitude for x in unbiasedVector]
-        else:
-            raise ValueError("Getting a all zeros hyperplane.")
-        # Change the hyperplane vector to unit vector.
+        # unbiasedVector2 = unbiasedVector
+        # unbiasedVecMagnitude = (sum([x ** 2 for x in unbiasedVector[:-1]])) ** 0.5
+        # if unbiasedVecMagnitude != 0:
+        #     unbiasedVector2 = [x / unbiasedVecMagnitude for x in unbiasedVector]
+        # else:
+        #     raise ValueError("Getting a all zeros hyperplane.")
+        # # Change the hyperplane vector to unit vector.
+        # currHyperplane = inputHyperPlaneList[i].hyperPlaneEquation
+        # hyperplaneMagnitude = (sum([x ** 2 for x in inputHyperPlaneList[i].hyperPlaneEquation[:-1]])) ** 0.5
+        # if hyperplaneMagnitude != 0:
+        #     currHyperplane = [x / hyperplaneMagnitude for x in inputHyperPlaneList[i].hyperPlaneEquation]
+        # else:
+        #     raise ValueError("Getting a all zeros hyperplane.")
+
         currHyperplane = inputHyperPlaneList[i].hyperPlaneEquation
-        hyperplaneMagnitude = (sum([x ** 2 for x in inputHyperPlaneList[i].hyperPlaneEquation[:-1]])) ** 0.5
-        if hyperplaneMagnitude != 0:
-            currHyperplane = [x / hyperplaneMagnitude for x in inputHyperPlaneList[i].hyperPlaneEquation]
-        else:
-            raise ValueError("Getting a all zeros hyperplane.")
-
-
         for k in range(len(currHyperplane)-1): # Don't count the constant variable???  Not
             # counting now.
-
-            norm += (currHyperplane[k] - unbiasedVector2[k]) ** 2
-            #norm += (inputHyperPlaneList[i].hyperPlaneEquation[k]/inputHyperPlaneList[i].hyperPlaneEquation[1] -
-            #unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
+            norm += (currHyperplane[k] - unbiasedVector[k]) ** 2
         norm = math.sqrt(norm)
 
         inputHyperPlaneList[i].defenderUtility = norm
@@ -171,26 +180,23 @@ def getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList
         norm = 0
         # get unit vector for unbiased vector and hyperplaneEquation
         # Change the normal vector to unit vector.
-        unbiasedVector2 = unbiasedVector
-        unbiasedVecMagnitude = (sum([x ** 2 for x in unbiasedVector[:-1]])) ** 0.5
-        if unbiasedVecMagnitude != 0:
-            unbiasedVector2 = [x / unbiasedVecMagnitude for x in unbiasedVector]
-        else:
-            raise ValueError("Getting a all zeros hyperplane.")
-        # Change the hyperplane vector to unit vector.
+        # unbiasedVector2 = unbiasedVector
+        # unbiasedVecMagnitude = (sum([x ** 2 for x in unbiasedVector[:-1]])) ** 0.5
+        # if unbiasedVecMagnitude != 0:
+        #     unbiasedVector2 = [x / unbiasedVecMagnitude for x in unbiasedVector]
+        # else:
+        #     raise ValueError("Getting a all zeros hyperplane.")
+        # # Change the hyperplane vector to unit vector.
+        # currHyperplane = convertedHyperplaneList[i].hyperPlaneEquation
+        # hyperplaneMagnitude = (sum([x ** 2 for x in convertedHyperplaneList[i].hyperPlaneEquation[:-1]])) ** 0.5
+        # if hyperplaneMagnitude != 0:
+        #     currHyperplane = [x / hyperplaneMagnitude for x in convertedHyperplaneList[i].hyperPlaneEquation]
+        # else:
+        #     raise ValueError("Getting a all zeros hyperplane.")
         currHyperplane = convertedHyperplaneList[i].hyperPlaneEquation
-        hyperplaneMagnitude = (sum([x ** 2 for x in convertedHyperplaneList[i].hyperPlaneEquation[:-1]])) ** 0.5
-        if hyperplaneMagnitude != 0:
-            currHyperplane = [x / hyperplaneMagnitude for x in convertedHyperplaneList[i].hyperPlaneEquation]
-        else:
-            raise ValueError("Getting a all zeros hyperplane.")
-
         for k in range(len(currHyperplane) - 1):  # Don't count the constant variable???  Not
             # counting now.
-
-            norm += (currHyperplane[k] - unbiasedVector2[k]) ** 2
-            #norm += (convertedHyperplaneList[i].hyperPlaneEquation[k] / convertedHyperplaneList[i].hyperPlaneEquation[1] -
-            #         unbiasedVector[k] / unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
+            norm += (currHyperplane[k] - unbiasedVector[k]) ** 2
         norm = math.sqrt(norm)
         convertedHyperplaneList[i].defenderUtility = norm
     return convertedHyperplaneList

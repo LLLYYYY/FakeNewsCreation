@@ -92,9 +92,9 @@ def hyperPlaneConversion(consumerHyperplane, vList, xList):
 
         generatedHyperplane = Hyperplane(generatedhyperplaneDirection+[0], []) #ignored alpha. Alpha becommes 0.
 
-        for point in vList:
-            # print(point)
-            debugsinglePointSubscribeOfHyperplane(generatedHyperplane, point, ci)
+        # for point in vList:
+        #     # print(point)
+        #     debugsinglePointSubscribeOfHyperplane(generatedHyperplane, point, ci)
 
         #getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation,xList, ci)
         # getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation)
