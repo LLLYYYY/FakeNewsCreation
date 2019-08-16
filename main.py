@@ -15,6 +15,8 @@ plt.rcParams['figure.figsize'] = (10.0, 8.0)
 plt.rcParams['savefig.dpi'] = 300
 plt.rcParams['figure.dpi'] = 300
 
+#TODO: Don't normalize anything.
+
 def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfStoryVectors, ci, runCount = 0):
     """Parameter input: Output parameter. Return run time."""
     #Already changed to storyVector hyperplane calculation.
@@ -139,8 +141,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         plotConvertedHyperplaneList = []
         if len(originalConvertedHyperplaneMatchList) < 3:
             print("Failed to convert enough hyperplane.")
-            #TODO: Should raise an error.
-            break
+            return False, 0, 0
         for p in range(3):
             matchedHyperplane = originalConvertedHyperplaneMatchList[p]
             plotOriginalHyperplaneList.append(matchedHyperplane[0])
@@ -189,26 +190,11 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 isFound = False
                 break
 
-            #TODO: FIX MOVE POINTS.
             isSucceed, movedPointList, defenderMaximumSubscription = movePoints(hyperplaneList[i],
                                                                                                      adversaryHyperplane,
 
                                                                                      consumerPointList, originalConsumerPointList,
                                                                                                 ci=ci)
-
-            # if i == len(hyperplaneList) - 2: # For testing and visualization purpose.
-            #     print("Debug ploting mode.")
-            #     temPointList = movedPointList
-            #     if pointDimension == 2:
-            #         fig = plt.subplot(2, 2, 3)
-            #         plt.scatter(*zip(*temPointList))
-            #         defenderPlotLineX, defenderPlotLineY = zip(*hyperplaneList[i].consumerPointList)
-            #         adversaryPlotLineX, adversaryPlotLineY = zip(*adversaryHyperplane.consumerPointList)
-            #         # fig.set_xlim(left=-1, right=2)
-            #         # fig.set_ylim(bottom=-1, top=2)
-            #         plt.plot(defenderPlotLineX, defenderPlotLineY)
-            #         plt.plot(adversaryPlotLineX, adversaryPlotLineY)
-            #     break
 
             if isSucceed == False:
                 continue
@@ -251,15 +237,13 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
 
         print("Current minimum defender utility is " + str(smallestL2Norm) + ".\n\n\n")
 
-
-        #TODO: Will cause bugs. NOT sure why.
-        # if movedPointList == originalConsumerPointList:
-        #     functionEndTime = timeit.default_timer()
-        #     return False, (functionEndTime - functionStartTime)
-
         iter += 1
         minimumDefenderUtilityList.append(smallestL2Norm)
         adversaryMaximumUtilityList.append(defenderHyperplane.adversaryUtility)
+
+        if smallestL2Norm > adversaryHyperplane.defenderUtility:
+            raise Exception("The chosen defender hyperplane has larger L2Norm compare to the adversary hyperplane.")
+
         if isFound == False:
             break
         #end outer while loop.
@@ -286,10 +270,14 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
 
 def plotDefAdvHyperplane(pointList, defenderHyperplaneEquation, adversaryHyperplaneEquation,
                          unbiasedStoryEquation, plotOutputDirectory, title, plotFileName):
-    """Attension: Only works in two dimension..."""
+    """Only works in two dimension... Only works when the y axis parameter of the hyperplane not equals to 0."""
     if not pointList:
         if len(pointList[0]) != 2:
             return
+
+    if defenderHyperplaneEquation[1] == 0 or adversaryHyperplaneEquation[1] == 0 or unbiasedStoryEquation[1] == 0:
+        print("The y axis parameter of the hyperplane equals to 0. Failed to plot.")
+        return
 
     fig = plt.figure()
     plt.scatter(*zip(*pointList))
@@ -297,7 +285,6 @@ def plotDefAdvHyperplane(pointList, defenderHyperplaneEquation, adversaryHyperpl
     adversaryPlotLineX = [-1, 1]
     unbiasedStoryVectorPlotLineX = [-1,1]
 
-    #TODO: Will crash if hyperplane's parameter at y axis equal to 0.
     defenderPlotLineY = [defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] - defenderHyperplaneEquation[
         2] / defenderHyperplaneEquation[1], -defenderHyperplaneEquation[0] / defenderHyperplaneEquation[1] -
                          defenderHyperplaneEquation[
@@ -337,6 +324,8 @@ def plotHyperplaneList(pointList, hyperplaneList, unbiasedStoryHyperplane, plotO
         if len(pointList[0]) != 2:
             return
 
+
+
     fig = plt.figure()
     plt.scatter(*zip(*pointList))
     plotLineListX = []
@@ -344,13 +333,17 @@ def plotHyperplaneList(pointList, hyperplaneList, unbiasedStoryHyperplane, plotO
     for hyperplane in hyperplaneList:
         hyperplaneEquation = hyperplane.hyperPlaneEquation
         plotLineListX.append([-1,1])
-        # TODO: Will crash if hyperplane's parameter at y axis equal to 0.
+        if hyperplaneEquation[1] == 0:
+            print("The y axis parameter of the hyperplane equals to 0. Failed to plot.")
+            return
         plotLineListY.append([hyperplaneEquation[0] / hyperplaneEquation[1] - hyperplaneEquation[
         2] / hyperplaneEquation[1], -hyperplaneEquation[0] / hyperplaneEquation[1] -
                          hyperplaneEquation[
                              2] / hyperplaneEquation[1]])
-
     unbiasedStoryEquation = unbiasedStoryHyperplane.hyperPlaneEquation
+    if unbiasedStoryEquation[1] == 0:
+        print("The y axis parameter of the hyperplane equals to 0. Failed to plot.")
+        return
     plotLineListX.append([-1, 1])
     plotLineListY.append([unbiasedStoryEquation[0] / unbiasedStoryEquation[1] - unbiasedStoryEquation[
         2] / unbiasedStoryEquation[1], -unbiasedStoryEquation[0] / unbiasedStoryEquation[1] -

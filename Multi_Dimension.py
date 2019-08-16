@@ -76,6 +76,8 @@ def getOriginalHyperplaneListWithUtilities2(inputHyperPlaneList, consumerPointLi
             inputHyperPlaneList[i], consumerPointList, ci)
 
         # L2 Norm:
+        # TODO: Should not change into the unit vector.
+
         norm = 0
 
         #get unit vector for unbiased vector and hyperplaneEquation
@@ -86,6 +88,7 @@ def getOriginalHyperplaneListWithUtilities2(inputHyperPlaneList, consumerPointLi
              unbiasedVector2 = [x/unbiasedVecMagnitude for x in unbiasedVector]
         else:
              raise ValueError("Getting a all zeros hyperplane.")
+
         # Change the hyperplane vector to unit vector.
         currHyperplane = inputHyperPlaneList[i].hyperPlaneEquation
         hyperplaneMagnitude = (sum([x ** 2 for x in inputHyperPlaneList[i].hyperPlaneEquation[:-1]])) ** 0.5
