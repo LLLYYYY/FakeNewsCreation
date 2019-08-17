@@ -125,7 +125,7 @@ def testHyperPlaneConversion():
     hyperplane = getHyperplaneEquation([[1+e,1+e],[-1-e, -2-e]])
     hyperplaneList = [hyperplane]
 
-    getOriginalHyperplaneListWithUtilities2(hyperplaneList, pointList, getMeanHyperplane(pointList).hyperPlaneEquation)
+    getOriginalHyperplaneListWithUtilities(hyperplaneList, pointList, getMeanHyperplane(pointList).hyperPlaneEquation)
 
     print(hyperplane.hyperPlaneEquation)
     print(hyperplaneList[0].pointSubscription)

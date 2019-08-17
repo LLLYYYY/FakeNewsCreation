@@ -7,6 +7,7 @@ from config import *
 import numpy as np
 import matplotlib.pyplot as plt
 from itertools import combinations
+import sys
 import os
 import timeit
 from cplex.exceptions.errors import *
@@ -15,9 +16,8 @@ plt.rcParams['figure.figsize'] = (10.0, 8.0)
 plt.rcParams['savefig.dpi'] = 300
 plt.rcParams['figure.dpi'] = 300
 
-#TODO: Don't normalize anything.
-
-def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfStoryVectors, ci, runCount = 0):
+def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfStoryVectors, ci, runCount = 0) -> (
+        bool, int):
     """Parameter input: Output parameter. Return run time."""
     #Already changed to storyVector hyperplane calculation.
 
@@ -78,8 +78,8 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
             hyperplaneList.append(getHyperplaneEquation(pointListUsedToGenerateHyperplane))
         print("Finished getting hyperplane list. The size of the list is " + str(len(hyperplaneList)) + ".")
 
-        hyperplaneList = getOriginalHyperplaneListWithUtilities2(hyperplaneList, consumerPointList,
-                                                unbiasedStoryHyperplane.hyperPlaneEquation)
+        hyperplaneList = getOriginalHyperplaneListWithUtilities(hyperplaneList, consumerPointList,
+                                                                unbiasedStoryHyperplane.hyperPlaneEquation)
 
         #for hyperplane in hyperplaneList:
         #    print(hyperplane.pointSubscription)
@@ -106,9 +106,9 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
 
             #print(hyperplane.pointSubscription)
             #print(hyperplane.hyperPlaneEquation)
-            for v in consumerPointList:
-                # print(v)
-                debugsinglePointSubscribeOfHyperplane2(hyperplane, v, ci)
+            # for v in consumerPointList:
+            #     # print(v)
+            #     debugsinglePointSubscribeOfHyperplane2(hyperplane, v, ci)
             #debug
             try:
                 convertedHyperplane = hyperPlaneConversion(hyperplane, consumerPointList, storyVectorList)
@@ -324,8 +324,6 @@ def plotHyperplaneList(pointList, hyperplaneList, unbiasedStoryHyperplane, plotO
         if len(pointList[0]) != 2:
             return
 
-
-
     fig = plt.figure()
     plt.scatter(*zip(*pointList))
     plotLineListX = []
@@ -388,7 +386,6 @@ iterationNumberList = []
 for pointNum in consumerTotalPointNumberList:
     # isSucceed = False
     runtimeList = []
-
     # while not isSucceed or len(runtimeList) <= 10:
     while len(runtimeList) <= maximumRunCountForEachSituation:
         isSucceed, runtime, iteration = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2,

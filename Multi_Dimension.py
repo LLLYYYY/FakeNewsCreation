@@ -71,57 +71,6 @@ def getOrthogonalUnitVector(inputHyperplane):
 
     return orthogonalUnitVector
 
-def getOriginalHyperplaneListWithUtilities2(inputHyperPlaneList, consumerPointList, unbiasedVector):
-
-    """Return hyperPlane list with utilities.
-        Dimension Free.
-        InputHyperPlaneList is a Hyperplane instance. But UnbiasedVector is just a vector list.
-    """
-
-    for i in range(len(inputHyperPlaneList)):
-
-        inputHyperPlaneList[i].pointSubscription, inputHyperPlaneList[i].adversaryUtility = \
-            countSubscribersOfHyperplane2(
-            inputHyperPlaneList[i], consumerPointList, ci)
-
-        # L2 Norm:
-
-        norm = 0
-
-        #get unit vector for unbiased vector and hyperplaneEquation
-        # Change the normal vector to unit vector.
-        # unbiasedVector2 = unbiasedVector
-        # unbiasedVecMagnitude = (sum([x ** 2 for x in unbiasedVector[:-1]])) ** 0.5
-        # if unbiasedVecMagnitude != 0:
-        #      unbiasedVector2 = [x/unbiasedVecMagnitude for x in unbiasedVector]
-        # else:
-        #      raise ValueError("Getting a all zeros hyperplane.")
-
-        # Change the hyperplane vector to unit vector.
-        # currHyperplane = inputHyperPlaneList[i].hyperPlaneEquation
-        # hyperplaneMagnitude = (sum([x ** 2 for x in inputHyperPlaneList[i].hyperPlaneEquation[:-1]])) ** 0.5
-        # if hyperplaneMagnitude != 0:
-        #     currHyperplane = [x / hyperplaneMagnitude for x in inputHyperPlaneList[i].hyperPlaneEquation]
-        # else:
-        #     raise ValueError("Getting a all zeros hyperplane.")
-
-        #for k in range(len(inputHyperPlaneList[i].hyperPlaneEquation)-1): # Don't count the constant variable???  Not
-            # counting now.
-        # for k in range(len(currHyperplane)-1):
-        #
-        #     norm += (currHyperplane[k] - unbiasedVector2[k]) ** 2
-        #     #norm += (inputHyperPlaneList[i].hyperPlaneEquation[k]/inputHyperPlaneList[i].hyperPlaneEquation[1] -
-        #     #unbiasedVector[k]/unbiasedVector[1]) ** 2  # When calculating the norm, I keep the y parameter to be 1.
-        # norm = math.sqrt(norm)
-        currHyperplane = inputHyperPlaneList[i].hyperPlaneEquation
-        for k in range(len(currHyperplane)-1):
-            norm += (currHyperplane[k] - unbiasedVector[k]) ** 2
-        norm = math.sqrt(norm)
-
-        inputHyperPlaneList[i].defenderUtility = norm
-    return inputHyperPlaneList
-
-
 def getOriginalHyperplaneListWithUtilities(inputHyperPlaneList, consumerPointList, unbiasedVector):
 
     """Return hyperPlane list with utilities.
@@ -132,8 +81,8 @@ def getOriginalHyperplaneListWithUtilities(inputHyperPlaneList, consumerPointLis
     for i in range(len(inputHyperPlaneList)):
 
         inputHyperPlaneList[i].pointSubscription, inputHyperPlaneList[i].adversaryUtility = \
-            countSubscribersOfHyperplane(
-            inputHyperPlaneList[i], consumerPointList, ci)
+            countSubscribersOfOriginalHyperplane(
+            inputHyperPlaneList[i], consumerPointList)
 
         # L2 Norm:
         norm = 0
@@ -170,7 +119,8 @@ def getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList
         originalConvertedHyperplaneMatchList))]
 
     for i in range(len(convertedHyperplaneList)):
-        convertedHyperplaneList[i].pointSubscription, convertedHyperplaneList[i].adversaryUtility = countSubscribersOfHyperplane(
+        convertedHyperplaneList[i].pointSubscription, convertedHyperplaneList[i].adversaryUtility = \
+            countSubscribersOfConvertedHyperplane(
             convertedHyperplaneList[i], consumerPointList,  ci)
 
         if convertedHyperplaneList[i].pointSubscription != originalHyperplaneList[i].pointSubscription:
@@ -242,7 +192,7 @@ def movePoints(defenderHyperplane, adversaryHyperplane, inputPointList, oringina
 
             distanceToOriginalPoints = twoPointsDistance(oringinalPointList[i], movedPoint)
 
-            if distanceToOriginalPoints <= longestMovingDistance and singlePointSubscribeOfHyperplane(
+            if distanceToOriginalPoints <= longestMovingDistance and singlePointSubscribeOfConvertedHyperplane(
                     defenderHyperplane, movedPoint, ci) == 1:
                 movedDefenderPointsList.append(movedPoint)
             else:
@@ -258,10 +208,10 @@ def movePoints(defenderHyperplane, adversaryHyperplane, inputPointList, oringina
     finalMovedPointList = movedDefenderPointsList # TODO: Delete this line when moving points to hurt adversary
     # hyperplane is enable.
 
-    _, defenderTotalSubscriptionNumber = countSubscribersOfHyperplane(defenderHyperplane,
+    _, defenderTotalSubscriptionNumber = countSubscribersOfConvertedHyperplane(defenderHyperplane,
                                                                                  finalMovedPointList,
                                                                          ci= ci)
-    _, adversaryTotalSubscriptionNumber = countSubscribersOfHyperplane(adversaryHyperplane,
+    _, adversaryTotalSubscriptionNumber = countSubscribersOfConvertedHyperplane(adversaryHyperplane,
                                                                                finalMovedPointList, ci = ci)
 
     if finalMovedPointList == inputPointList or finalMovedPointList == oringinalPointList:
@@ -292,34 +242,31 @@ def isTwoPointsOnTheSameSideOfHyperplane(pointA, pointB, hyperplane):
         # print("Point Moved.")
         return True
 
-def countSubscribersOfHyperplane(inputHyperplane, inputPointList, ci):  #Attension, when we don't need ci,
-    # set ci to be 0.
+def countSubscribersOfConvertedHyperplane(inputHyperplane, inputPointList, ci):
     pointSubscribedList = []
     totalSubscribeNumber = 0
 
     for inputPoint in inputPointList:
-        pointSubscribed = singlePointSubscribeOfHyperplane(inputHyperplane=inputHyperplane, inputPoint=inputPoint,
+        pointSubscribed = singlePointSubscribeOfConvertedHyperplane(inputHyperplane=inputHyperplane, inputPoint=inputPoint,
                                                            ci = ci)
         if pointSubscribed == 1:
             totalSubscribeNumber += 1
         pointSubscribedList.append(pointSubscribed)
     return pointSubscribedList, totalSubscribeNumber
 
-def countSubscribersOfHyperplane2(inputHyperplane, inputPointList, ci):  #Attension, when we don't need ci,
-    # set ci to be 0.
+def countSubscribersOfOriginalHyperplane(inputHyperplane:Hyperplane, inputPointList):
     pointSubscribedList = []
     totalSubscribeNumber = 0
 
     for inputPoint in inputPointList:
-        pointSubscribed = singlePointSubscribeOfHyperplane2(inputHyperplane=inputHyperplane, inputPoint=inputPoint,
-                                                           ci = ci)
+        pointSubscribed = singlePointSubscribeOfOriginalHyperplane(inputHyperplane=inputHyperplane, inputPoint=inputPoint)
         if pointSubscribed == 1:
             totalSubscribeNumber += 1
         pointSubscribedList.append(pointSubscribed)
     return pointSubscribedList, totalSubscribeNumber
 
 #to be used by original generated hyperplanes, which have a constant term and do not need ci
-def singlePointSubscribeOfHyperplane2(inputHyperplane, inputPoint, ci):
+def singlePointSubscribeOfOriginalHyperplane(inputHyperplane, inputPoint):
     n = []
     for j in range(len(inputPoint)):
         n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
@@ -330,27 +277,12 @@ def singlePointSubscribeOfHyperplane2(inputHyperplane, inputPoint, ci):
     else:
         return 0
 
-
-def debugsinglePointSubscribeOfHyperplane2(inputHyperplane, inputPoint, ci):
+def singlePointSubscribeOfConvertedHyperplane(inputHyperplane, inputPoint, ci):
     n = []
     for j in range(len(inputPoint)):
         n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
     n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
     n = sum(n)
-    # print(n)
-    #if n > 0 - precisionError:
-    if n>=0:
-        return 1
-    else:
-        return 0
-
-#to be used by converted hyperplane directions, which have no constant term other than ci
-def singlePointSubscribeOfHyperplane(inputHyperplane, inputPoint, ci):
-    n = []
-    for j in range(len(inputPoint)):
-        n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
-    #n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
-    n = sum(n)
     n=n-ci
     if n >=-1*precisionError and n<=0:
         n=0
@@ -359,21 +291,35 @@ def singlePointSubscribeOfHyperplane(inputHyperplane, inputPoint, ci):
     else:
         return 0
 
-def debugsinglePointSubscribeOfHyperplane(inputHyperplane, inputPoint, ci):
-    n = []
-    for j in range(len(inputPoint)):
-        n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
-    #n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
-    n = sum(n)
-    n=n-ci
-    # print(n)
-    if n >=-1*precisionError and n<=0:
-        n=0
-    #if n > 0 - precisionError:
-    if n>=0:
-        return 1
-    else:
-        return 0
+
+# def debugsinglePointSubscribeOfHyperplane2(inputHyperplane:Hyperplane, inputPoint, ci):
+#     n = []
+#     for j in range(len(inputPoint)):
+#         n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
+#     n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
+#     n = sum(n)
+#     # print(n)
+#     #if n > 0 - precisionError:
+#     if n>=0:
+#         return 1
+#     else:
+#         return 0
+
+# def debugsinglePointSubscribeOfHyperplane(inputHyperplane:Hyperplane, inputPoint, ci):
+#     n = []
+#     for j in range(len(inputPoint)):
+#         n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
+#     #n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
+#     n = sum(n)
+#     n=n-ci
+#     # print(n)
+#     if n >=-1*precisionError and n<=0:
+#         n=0
+#     #if n > 0 - precisionError:
+#     if n>=0:
+#         return 1
+#     else:
+#         return 0
 
 ### Test
 
