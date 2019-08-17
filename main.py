@@ -16,8 +16,7 @@ plt.rcParams['figure.figsize'] = (10.0, 8.0)
 plt.rcParams['savefig.dpi'] = 300
 plt.rcParams['figure.dpi'] = 300
 
-def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfStoryVectors, ci, runCount = 0) -> (
-        bool, int):
+def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfStoryVectors, ci, runCount = 0):
     """Parameter input: Output parameter. Return run time."""
     #Already changed to storyVector hyperplane calculation.
 
@@ -85,24 +84,24 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         #    print(hyperplane.pointSubscription)
 
         print("Finished Getting Lines with Utilities")
-        #debug
-        iterRange = [i for i in range(numOfComsumerPoints)]
-        allComb = combinations(iterRange, pointDimension)
-        #debug
-        counter=0
+        # #debug
+        # iterRange = [i for i in range(numOfComsumerPoints)]
+        # allComb = combinations(iterRange, pointDimension)
+        # #debug
+        # counter=0
         for hyperplane in hyperplaneList:
-            #debug
-            comb_counter=0
-            for comb in allComb:
-                if (comb_counter==counter):
-                    # print("Current combination of points being considered: ")
-                    for nv in comb:
-                        # print(consumerPointList[nv])
-                        pass
-                    break
-                comb_counter=comb_counter+1
-
-            counter=counter+1
+        #     #debug
+        #     comb_counter=0
+        #     for comb in allComb:
+        #         if (comb_counter==counter):
+        #             # print("Current combination of points being considered: ")
+        #             for nv in comb:
+        #                 # print(consumerPointList[nv])
+        #                 pass
+        #             break
+        #         comb_counter=comb_counter+1
+        #
+        #     counter=counter+1
 
             #print(hyperplane.pointSubscription)
             #print(hyperplane.hyperPlaneEquation)
@@ -114,7 +113,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 convertedHyperplane = hyperPlaneConversion(hyperplane, consumerPointList, storyVectorList)
                 originalConvertedHyperplaneMatchList.append([hyperplane, convertedHyperplane])
             except CplexSolverError as e:
-                # print("Failed to generated hyperplane.")
+                print("Failed to generated hyperplane.")
                 # print("Error message: " + str(e) + "\n\n\n\n\n\n\n\n\n")
                 continue
 
