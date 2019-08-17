@@ -7,26 +7,16 @@ def getMeanHyperplane(inputStoryVectorList):
     """Input story vector list, return unbiased mean line.
         This function is dimension free.
     """
-    if not inputStoryVectorList:
+    if inputStoryVectorList.size == 0:
         raise ValueError("The consumerPointList is empty. Please check the input point list.")
 
-    meanPoint = []
-    for i in range(len(inputStoryVectorList[0])):
-        n = 0
-        for line in inputStoryVectorList:
-            n += line[i]
-        n /= len(inputStoryVectorList)
-        meanPoint.append(n)
+    meanPoint = inputStoryVectorList.sum(axis=0) / inputStoryVectorList.size
 
-    isAllZeros = True
-    for n in meanPoint:
-        if n != 0:
-            isAllZeros = False
-
-    if isAllZeros == True:
+    if np.count_nonzero(meanPoint) == 0:
         raise ValueError("The unbiased vector contains all zeros parameters.")
 
-    meanHyperplane = Hyperplane(meanPoint+[0])
+    meanPoint.append(0)
+    meanHyperplane = Hyperplane(meanPoint)
     return meanHyperplane
 
 #TODO: HANDLE PARALLEL VECTORS IN HIGHER DIMENSIONS

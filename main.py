@@ -7,7 +7,6 @@ from config import *
 import numpy as np
 import matplotlib.pyplot as plt
 from itertools import combinations
-import sys
 import os
 import timeit
 from cplex.exceptions.errors import *
@@ -15,6 +14,9 @@ plt.switch_backend('agg')
 plt.rcParams['figure.figsize'] = (10.0, 8.0)
 plt.rcParams['savefig.dpi'] = 300
 plt.rcParams['figure.dpi'] = 300
+
+# TODO: Store every results in a file.
+# TODO: Parallelism version.
 
 def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfStoryVectors, ci, runCount = 0):
     """Parameter input: Output parameter. Return run time."""
@@ -28,7 +30,6 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
     if not os.path.isdir(outputDirectory):
         os.mkdir(outputDirectory)
 
-    consumerPointList = []
     storyVectorList = []
     hyperplaneList = []
     minimumDefenderUtilityList = []
@@ -39,13 +40,15 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
 
     iter = 0  # Used to distinguish different iterations of the same consumer point number and dimension.
 
-    for i in range(numOfComsumerPoints):
-        consumerPointList.append([ 2*x-1 for x in np.random.ranf(pointDimension).tolist()])
-    originalConsumerPointList = consumerPointList
+    consumerPointList = np.random.rand(numOfComsumerPoints, pointDimension)
+    consumerPointList = consumerPointList * 2 - 1
+    originalConsumerPointList = np.copy(consumerPointList)
 
-    for i in range(numberOfStoryVectors):
-        storyVectorList.append([ 2*x-1 for x in np.random.ranf(pointDimension).tolist()])
+    storyVectorList = np.random.rand(numberOfStoryVectors, pointDimension)
+    storyVectorList = storyVectorList * 2 - 1
+
     unbiasedStoryHyperplane = getMeanHyperplane(storyVectorList)
+
     whileCounter = 0
     while len(minimumDefenderUtilityList) <= 1 or ( len(minimumDefenderUtilityList) > 1 and abs(minimumDefenderUtilityList[-1] -
                                                                                minimumDefenderUtilityList[-2]) >
