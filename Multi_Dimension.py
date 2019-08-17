@@ -254,7 +254,7 @@ def countSubscribersOfConvertedHyperplane(inputHyperplane, inputPointList, ci):
         pointSubscribedList.append(pointSubscribed)
     return pointSubscribedList, totalSubscribeNumber
 
-def countSubscribersOfOriginalHyperplane(inputHyperplane:Hyperplane, inputPointList):
+def countSubscribersOfOriginalHyperplane(inputHyperplane, inputPointList):
     pointSubscribedList = []
     totalSubscribeNumber = 0
 
