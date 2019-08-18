@@ -1,10 +1,13 @@
 """This file store all the global variables used in the program."""
+from multiprocessing import  cpu_count
+
+
 storyVectorNumber = 150
 consumerPointNumber = 150
 
 
 dimensionList = [2]   #Must be a list!!!
-consumerTotalPointNumberList = [20]  #Must be a list!!!
+consumerTotalPointNumberList = [30]  #Must be a list!!!
 numberOfStoryVectors = 150
 
 
@@ -22,3 +25,5 @@ epsilon = 0.01  # Use for determine the minimum l2norm change.
 
 longestMovingDistance = 0.4
 singleTimeMovingDistance = 0.2
+
+program_process_number = 4

@@ -85,7 +85,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
 
         print("Finished Getting Lines with Utilities")
 
-        cplexProcessPool = Pool(processes=cpu_count())
+        cplexProcessPool = Pool(processes=program_process_number)
         cplexPoolResult = []
         for hyperplane in hyperplaneList:
             # convertedHyperplane = hyperPlaneConversion(hyperplane, consumerPointList, storyVectorList)
