@@ -113,7 +113,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 convertedHyperplane = hyperPlaneConversion(hyperplane, consumerPointList, storyVectorList)
                 originalConvertedHyperplaneMatchList.append([hyperplane, convertedHyperplane])
             except CplexSolverError as e:
-                print("Failed to generated hyperplane.")
+                # print("Failed to generated hyperplane.")
                 # print("Error message: " + str(e) + "\n\n\n\n\n\n\n\n\n")
                 continue
 
@@ -131,8 +131,9 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
             return False, functionEndTime - functionStartTime, 0
         print("Finished generating converted hyperplane with utilities.")
 
-        if whileCounter > 1 and defenderHyperplane != Hyperplane([], []):
+        if whileCounter > 1 and defenderHyperplane != Hyperplane([], []) and adversaryHyperplane != Hyperplane([], []):
             hyperplaneList.append(defenderHyperplane)
+            hyperplaneList.append(adversaryHyperplane)
 
 
         # Now plot the original and converted hyperplane.
