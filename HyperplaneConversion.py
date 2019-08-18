@@ -3,6 +3,7 @@ import sys
 from DataStructure import *
 from Multi_Dimension import *
 from cplex.exceptions.errors import *
+import numpy as np
 
 def hyperPlaneConversion(consumerHyperplane, vList, xList):
 
@@ -66,8 +67,11 @@ def hyperPlaneConversion(consumerHyperplane, vList, xList):
 
     # my_prob.write("/Users/sly/Downloads/FakeNewsOutput/file.lp")
     # my_prob.write("/Users/auy212-admin/Downloads/FakeNewsOutput/file.lp")
-
-    my_prob.solve()
+    try:
+        my_prob.solve()
+    except CplexSolverError:
+        print("Failed to generated hyperplane.")
+        return None
 
     # print("The CPLEX status output is: " + str(my_prob.solution.get_status()))
 
@@ -82,41 +86,42 @@ def hyperPlaneConversion(consumerHyperplane, vList, xList):
         if isAllZeros is True:
             raise ValueError("CPLEX return all zeros solution.")
 
-        generatedhyperplaneDirection = len(vList[0]) * [0]
+        generatedhyperplaneDirection = np.zeros(len(vList[0]))
         for j in range(len(xList)):
-            temp = [a[j] * xList[j][l] for l in range(len(xList[j]))]#a_jx_j
-            temp = [temp[l] / k for l in range(len(temp))]##(a_jx_j)/k
-            generatedhyperplaneDirection = [l+p for l,p in zip(temp, generatedhyperplaneDirection)]
+            temp = a[j] * xList[j] / k  #(a_j*x_j)/k
+            generatedhyperplaneDirection += temp
         # print("Consumer hyperplane is: " + str(consumerHyperplane.hyperPlaneEquation))
         # print("Generated hyperplane is: " + str(generatedhyperplaneDirection) + str(-1*ci))
 
-        generatedHyperplane = Hyperplane(generatedhyperplaneDirection+[0], []) #ignored alpha. Alpha becommes 0.
+        convertedHyperplane = Hyperplane(np.append(generatedhyperplaneDirection,0), []) #ignored alpha. Alpha
+        # becommes 0.
 
         # for point in vList:
         #     # print(point)
-        #     debugsinglePointSubscribeOfHyperplane(generatedHyperplane, point, ci)
+        #     debugsinglePointSubscribeOfHyperplane(convertedHyperplane, point, ci)
 
-        #getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation,xList, ci)
-        # getOriginalHyperplaneListWithUtilities([generatedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation)
+        #getOriginalHyperplaneListWithUtilities([convertedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation,xList, ci)
+        # getOriginalHyperplaneListWithUtilities([convertedHyperplane], vList, getMeanHyperplane(vList).hyperPlaneEquation)
         # originalConvertedHyperplane = []
-        # originalConvertedHyperplane.append([consumerHyperplane, generatedHyperplane])
+        # originalConvertedHyperplane.append([consumerHyperplane, convertedHyperplane])
         # generatedHyperplaneList = getConvertedHyperplaneListWithUtilities(originalConvertedHyperplane, vList,
         #                                                                   getMeanHyperplane(xList).hyperPlaneEquation,
         #                                                                   ci)
-        # generatedHyperplane = generatedHyperplaneList[0]
+        # convertedHyperplane = generatedHyperplaneList[0]
 
         # print(consumerHyperplane.pointSubscription)
-        # print(generatedHyperplane.pointSubscription)
+        # print(convertedHyperplane.pointSubscription)
 
-        # if generatedHyperplane.pointSubscription != consumerHyperplane.pointSubscription:
+        # if convertedHyperplane.pointSubscription != consumerHyperplane.pointSubscription:
         #     raise ValueError("Error in hyperplane conversion code. CPLEX returned a_j values without error, but still the m_i "
         #           "values do not match")
-        #print(generatedHyperplane.hyperPlaneEquation)
-        #print("Generated Hyperplane's points subscription:" + str(generatedHyperplane.pointSubscription) + "\n\n\n\n")
-        return generatedHyperplane
+        #print(convertedHyperplane.hyperPlaneEquation)
+        #print("Generated Hyperplane's points subscription:" + str(convertedHyperplane.pointSubscription) + "\n\n\n\n")
+        return consumerHyperplane, convertedHyperplane
     else:
-        raise CplexSolverError("No Solution Exists. Cplex solution status equals to " + str(my_prob.solution.get_status()))
-
+        # raise CplexSolverError("No Solution Exists. Cplex solution status equals to " + str(my_prob.solution.get_status()))
+        # print("Failed to generated hyperplane.")
+        return None
 
 def testHyperPlaneConversion():
     pointList = [[1, 1], [-1,-2]]

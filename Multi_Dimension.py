@@ -10,13 +10,12 @@ def getMeanHyperplane(inputStoryVectorList):
     if inputStoryVectorList.size == 0:
         raise ValueError("The consumerPointList is empty. Please check the input point list.")
 
-    meanPoint = inputStoryVectorList.sum(axis=0) / inputStoryVectorList.size
+    meanPoint = inputStoryVectorList.sum(axis=0) / len(inputStoryVectorList)
 
     if np.count_nonzero(meanPoint) == 0:
         raise ValueError("The unbiased vector contains all zeros parameters.")
 
-    meanPoint.append(0)
-    meanHyperplane = Hyperplane(meanPoint)
+    meanHyperplane = Hyperplane(np.append(meanPoint,[0]))
     return meanHyperplane
 
 #TODO: HANDLE PARALLEL VECTORS IN HIGHER DIMENSIONS
@@ -33,19 +32,9 @@ def getHyperplaneEquation(pointList):
     dimension = len(pointList[0])
     b = np.ones(dimension)
     pointMatrix = np.array(pointList)
-    hyperplaneMatrix = np.linalg.solve(pointMatrix,b)
-    hyperplaneEauation = hyperplaneMatrix.tolist()
-    hyperplaneEauation.append(-1)
-
-
-    # if hyperplaneEauation[1] < 0:
-    #     hyperplaneEauation = [-x for x in hyperplaneEauation]
-    #
-    # if hyperplaneEauation[1] == 0:
-    #     raise ValueError("Hyperplane parallel to the y axis. Error!")
-    # else:
-    #     devider = hyperplaneEauation[1]
-    #     hyperplaneEauation = [x/devider for x in hyperplaneEauation]
+    hyperplaneMatrix = np.linalg.solve(pointMatrix, b)
+    hyperplaneEauation = hyperplaneMatrix
+    hyperplaneEauation = np.append(hyperplaneEauation, -1)
 
     outputHyperplaneEquation = Hyperplane(hyperPlaneEquation = hyperplaneEauation)
     return outputHyperplaneEquation
@@ -53,11 +42,11 @@ def getHyperplaneEquation(pointList):
 def getOrthogonalUnitVector(inputHyperplane):
     """The return vector is a unit vector."""
     orthogonalVector = inputHyperplane.hyperPlaneEquation[:-1]
-    meg = math.sqrt(sum([x**2 for x in orthogonalVector]))
+    meg = math.sqrt(np.sum(orthogonalVector ** 2))
 
-    orthogonalUnitVector = [ x/meg for x in orthogonalVector]
-    if orthogonalUnitVector[1] < 0:  #Just in case. Not gonna happen.
-        orthogonalUnitVector = [-x for x in orthogonalUnitVector]
+    orthogonalUnitVector = orthogonalVector / meg
+    if orthogonalUnitVector[1] < 0:
+        orthogonalUnitVector = -orthogonalVector
 
     return orthogonalUnitVector
 
@@ -75,28 +64,9 @@ def getOriginalHyperplaneListWithUtilities(inputHyperPlaneList, consumerPointLis
             inputHyperPlaneList[i], consumerPointList)
 
         # L2 Norm:
-        norm = 0
-        # get unit vector for unbiased vector and hyperplaneEquation
-        # Change the normal vector to unit vector.
-        # unbiasedVector2 = unbiasedVector
-        # unbiasedVecMagnitude = (sum([x ** 2 for x in unbiasedVector[:-1]])) ** 0.5
-        # if unbiasedVecMagnitude != 0:
-        #     unbiasedVector2 = [x / unbiasedVecMagnitude for x in unbiasedVector]
-        # else:
-        #     raise ValueError("Getting a all zeros hyperplane.")
-        # # Change the hyperplane vector to unit vector.
-        # currHyperplane = inputHyperPlaneList[i].hyperPlaneEquation
-        # hyperplaneMagnitude = (sum([x ** 2 for x in inputHyperPlaneList[i].hyperPlaneEquation[:-1]])) ** 0.5
-        # if hyperplaneMagnitude != 0:
-        #     currHyperplane = [x / hyperplaneMagnitude for x in inputHyperPlaneList[i].hyperPlaneEquation]
-        # else:
-        #     raise ValueError("Getting a all zeros hyperplane.")
-
-        currHyperplane = inputHyperPlaneList[i].hyperPlaneEquation
-        for k in range(len(currHyperplane)-1): # Don't count the constant variable???  Not
-            # counting now.
-            norm += (currHyperplane[k] - unbiasedVector[k]) ** 2
-        norm = math.sqrt(norm)
+        currHyperplaneEquationWithoutC = inputHyperPlaneList[i].hyperPlaneEquation[:-1]
+        currUnbiasedVectorWithoutC = unbiasedVector[:-1]
+        norm = math.sqrt(np.sum((currHyperplaneEquationWithoutC - currUnbiasedVectorWithoutC) ** 2))
 
         inputHyperPlaneList[i].defenderUtility = norm
     return inputHyperPlaneList
@@ -113,31 +83,16 @@ def getConvertedHyperplaneListWithUtilities(originalConvertedHyperplaneMatchList
             countSubscribersOfConvertedHyperplane(
             convertedHyperplaneList[i], consumerPointList,  ci)
 
-        if convertedHyperplaneList[i].pointSubscription != originalHyperplaneList[i].pointSubscription:
+        # if convertedHyperplaneList[i].pointSubscription != originalHyperplaneList[i].pointSubscription:
+        if not np.array_equal(convertedHyperplaneList[i].pointSubscription, originalHyperplaneList[
+            i].pointSubscription):
             raise ValueError("The converted hyperplane has different point subscription compare to the original.")
 
         # L2 Norm:
         norm = 0
-        # get unit vector for unbiased vector and hyperplaneEquation
-        # Change the normal vector to unit vector.
-        # unbiasedVector2 = unbiasedVector
-        # unbiasedVecMagnitude = (sum([x ** 2 for x in unbiasedVector[:-1]])) ** 0.5
-        # if unbiasedVecMagnitude != 0:
-        #     unbiasedVector2 = [x / unbiasedVecMagnitude for x in unbiasedVector]
-        # else:
-        #     raise ValueError("Getting a all zeros hyperplane.")
-        # # Change the hyperplane vector to unit vector.
-        # currHyperplane = convertedHyperplaneList[i].hyperPlaneEquation
-        # hyperplaneMagnitude = (sum([x ** 2 for x in convertedHyperplaneList[i].hyperPlaneEquation[:-1]])) ** 0.5
-        # if hyperplaneMagnitude != 0:
-        #     currHyperplane = [x / hyperplaneMagnitude for x in convertedHyperplaneList[i].hyperPlaneEquation]
-        # else:
-        #     raise ValueError("Getting a all zeros hyperplane.")
-        currHyperplane = convertedHyperplaneList[i].hyperPlaneEquation
-        for k in range(len(currHyperplane) - 1):  # Don't count the constant variable???  Not
-            # counting now.
-            norm += (currHyperplane[k] - unbiasedVector[k]) ** 2
-        norm = math.sqrt(norm)
+        currHyperplaneEquationWithoutC = convertedHyperplaneList[i].hyperPlaneEquation[:-1]
+        currUnbiasedVectorWithoutC = unbiasedVector[:-1]
+        norm = math.sqrt(np.sum((currHyperplaneEquationWithoutC - currUnbiasedVectorWithoutC) ** 2))
         convertedHyperplaneList[i].defenderUtility = norm
     return convertedHyperplaneList
 
@@ -204,7 +159,7 @@ def movePoints(defenderHyperplane, adversaryHyperplane, inputPointList, oringina
     _, adversaryTotalSubscriptionNumber = countSubscribersOfConvertedHyperplane(adversaryHyperplane,
                                                                                finalMovedPointList, ci = ci)
 
-    if finalMovedPointList == inputPointList or finalMovedPointList == oringinalPointList:
+    if np.array_equal(finalMovedPointList, inputPointList) or np.array_equal(finalMovedPointList, oringinalPointList):
         return False, [], defenderTotalSubscriptionNumber
 
     if defenderTotalSubscriptionNumber >= adversaryTotalSubscriptionNumber and defenderTotalSubscriptionNumber > 0:
@@ -233,46 +188,42 @@ def isTwoPointsOnTheSameSideOfHyperplane(pointA, pointB, hyperplane):
         return True
 
 def countSubscribersOfConvertedHyperplane(inputHyperplane, inputPointList, ci):
-    pointSubscribedList = []
+    pointSubscribedList = np.empty(len(inputPointList))
     totalSubscribeNumber = 0
 
-    for inputPoint in inputPointList:
-        pointSubscribed = singlePointSubscribeOfConvertedHyperplane(inputHyperplane=inputHyperplane, inputPoint=inputPoint,
+    for i in range(len(inputPointList)):
+        pointSubscribed = singlePointSubscribeOfConvertedHyperplane(inputHyperplane=inputHyperplane,
+                                                                    inputPoint=inputPointList[i],
                                                            ci = ci)
         if pointSubscribed == 1:
             totalSubscribeNumber += 1
-        pointSubscribedList.append(pointSubscribed)
+        pointSubscribedList[i] = pointSubscribed
     return pointSubscribedList, totalSubscribeNumber
 
 def countSubscribersOfOriginalHyperplane(inputHyperplane, inputPointList):
-    pointSubscribedList = []
+    pointSubscribedList = np.empty(len(inputPointList))
     totalSubscribeNumber = 0
 
-    for inputPoint in inputPointList:
-        pointSubscribed = singlePointSubscribeOfOriginalHyperplane(inputHyperplane=inputHyperplane, inputPoint=inputPoint)
+    for i in range(len(inputPointList)):
+        pointSubscribed = singlePointSubscribeOfOriginalHyperplane(inputHyperplane=inputHyperplane,
+                                                                   inputPoint=inputPointList[i])
         if pointSubscribed == 1:
             totalSubscribeNumber += 1
-        pointSubscribedList.append(pointSubscribed)
+        pointSubscribedList[i] = pointSubscribed
     return pointSubscribedList, totalSubscribeNumber
 
 #to be used by original generated hyperplanes, which have a constant term and do not need ci
 def singlePointSubscribeOfOriginalHyperplane(inputHyperplane, inputPoint):
-    n = []
-    for j in range(len(inputPoint)):
-        n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
-    n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
-    n = sum(n)
+    n = np.dot(inputHyperplane.hyperPlaneEquation[:-1], inputPoint)
+    n += inputHyperplane.hyperPlaneEquation[-1]
     if n>=0:
         return 1
     else:
         return 0
 
 def singlePointSubscribeOfConvertedHyperplane(inputHyperplane, inputPoint, ci):
-    n = []
-    for j in range(len(inputPoint)):
-        n.append(inputHyperplane.hyperPlaneEquation[j] * inputPoint[j])
-    n.append(inputHyperplane.hyperPlaneEquation[-1])  # Re-enable the constant variable.
-    n = sum(n)
+    n = np.dot(inputHyperplane.hyperPlaneEquation[:-1], inputPoint)
+    n += inputHyperplane.hyperPlaneEquation[-1]
     n=n-ci
     if n >=-1*precisionError and n<=0:
         n=0

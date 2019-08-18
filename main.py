@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from itertools import combinations
 import os
 import timeit
+from multiprocessing import Pool, cpu_count
 from cplex.exceptions.errors import *
 plt.switch_backend('agg')
 plt.rcParams['figure.figsize'] = (10.0, 8.0)
@@ -30,7 +31,6 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
     if not os.path.isdir(outputDirectory):
         os.mkdir(outputDirectory)
 
-    storyVectorList = []
     hyperplaneList = []
     minimumDefenderUtilityList = []
     adversaryMaximumUtilityList = []
@@ -56,9 +56,6 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
 
         whileCounter += 1
 
-        originalConvertedHyperplaneMatchList = []  # Used to store original and converted list. The element of the list is
-        # matched hyperplane pairs.
-
         print("Running dimension " + str(pointDimension)+ " with point number: "+ str(numOfComsumerPoints))
         # print("The Unbiased story vector is " + str(unbiasedStoryHyperplane.hyperPlaneEquation))
 
@@ -74,51 +71,39 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 pointListUsedToGenerateHyperplane.append(consumerPointList[i])
             #perturb the point list. Will work only for 2D
             #TODO: Fix for N dimensions
-            pointListUsedToGenerateHyperplane[0] = [pointListUsedToGenerateHyperplane[0][0]+ 0.001, pointListUsedToGenerateHyperplane[0][1]+0.001]
-            pointListUsedToGenerateHyperplane[1] = [pointListUsedToGenerateHyperplane[1][0]- 0.001, pointListUsedToGenerateHyperplane[1][1]-0.001]
-
+            pointListUsedToGenerateHyperplane[0] = [pointListUsedToGenerateHyperplane[0][0] + 0.001,
+                                                    pointListUsedToGenerateHyperplane[0][1]+0.001]
+            pointListUsedToGenerateHyperplane[1] = [pointListUsedToGenerateHyperplane[1][0] - 0.001,
+                                                    pointListUsedToGenerateHyperplane[1][1]-0.001]
+            # When changing into Hyperplane instance, the hyperplane equation will change into numpy.array.
+            # For hyperplane list. Because the hyperplane instance is a custom type
             hyperplaneList.append(getHyperplaneEquation(pointListUsedToGenerateHyperplane))
         print("Finished getting hyperplane list. The size of the list is " + str(len(hyperplaneList)) + ".")
 
         hyperplaneList = getOriginalHyperplaneListWithUtilities(hyperplaneList, consumerPointList,
                                                                 unbiasedStoryHyperplane.hyperPlaneEquation)
 
-        #for hyperplane in hyperplaneList:
-        #    print(hyperplane.pointSubscription)
-
         print("Finished Getting Lines with Utilities")
-        # #debug
-        # iterRange = [i for i in range(numOfComsumerPoints)]
-        # allComb = combinations(iterRange, pointDimension)
-        # #debug
-        # counter=0
-        for hyperplane in hyperplaneList:
-        #     #debug
-        #     comb_counter=0
-        #     for comb in allComb:
-        #         if (comb_counter==counter):
-        #             # print("Current combination of points being considered: ")
-        #             for nv in comb:
-        #                 # print(consumerPointList[nv])
-        #                 pass
-        #             break
-        #         comb_counter=comb_counter+1
-        #
-        #     counter=counter+1
 
-            #print(hyperplane.pointSubscription)
-            #print(hyperplane.hyperPlaneEquation)
-            # for v in consumerPointList:
-            #     # print(v)
-            #     debugsinglePointSubscribeOfHyperplane2(hyperplane, v, ci)
-            #debug
-            try:
-                convertedHyperplane = hyperPlaneConversion(hyperplane, consumerPointList, storyVectorList)
-                originalConvertedHyperplaneMatchList.append([hyperplane, convertedHyperplane])
-            except CplexSolverError as e:
-                print("Failed to generated hyperplane.")
-                # print("Error message: " + str(e) + "\n\n\n\n\n\n\n\n\n")
-                continue
+        cplexProcessPool = Pool(processes=cpu_count())
+        cplexPoolResult = []
+        for hyperplane in hyperplaneList:
+            # convertedHyperplane = hyperPlaneConversion(hyperplane, consumerPointList, storyVectorList)
+            cplexPoolResult.append(cplexProcessPool.apply_async(hyperPlaneConversion,
+                                                                                     args= (hyperplane,
+                                                                                            consumerPointList,
+                                                                                            storyVectorList,)))
+        cplexProcessPool.close()
+        cplexProcessPool.join()
+
+        originalConvertedHyperplaneMatchList = []
+        for res in cplexPoolResult:
+            originalConvertedHyperplaneMatchList.append(res.get())
+        originalConvertedHyperplaneMatchList = [x for x in originalConvertedHyperplaneMatchList if x is not None] # Used to store original and converted list. The element
+        # of the
+        # list is
+        # matched hyperplane pairs.
+
 
         print("Finished converting hyperplanes.  The size of the convert hyperplanelist is:" + str(len(
             originalConvertedHyperplaneMatchList)) + ".")
@@ -187,7 +172,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         # Now iterate the hyperplane list and try to move points.
         isFound = False
         for i in range(len(hyperplaneList)):
-            if hyperplaneList[i].hyperPlaneEquation == adversaryHyperplane.hyperPlaneEquation:
+            if np.array_equal(hyperplaneList[i].hyperPlaneEquation, adversaryHyperplane.hyperPlaneEquation):
                 print("The defender hyperplane and the adversary hyperplane matched. List number: " + str(i))
                 isFound = False
                 break
@@ -202,7 +187,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 continue
             else:
                 isFound = True
-                if movedPointList == consumerPointList:
+                if np.array_equal(movedPointList, consumerPointList):
                     print("Points not moving.")
                     raise Exception("Points not moving. But the code should not reach this point. Error.")
 
@@ -273,9 +258,11 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
 def plotDefAdvHyperplane(pointList, defenderHyperplaneEquation, adversaryHyperplaneEquation,
                          unbiasedStoryEquation, plotOutputDirectory, title, plotFileName):
     """Only works in two dimension... Only works when the y axis parameter of the hyperplane not equals to 0."""
-    if not pointList:
+    if not len(pointList) == 0:
         if len(pointList[0]) != 2:
             return
+    else:
+        return
 
     if defenderHyperplaneEquation[1] == 0 or adversaryHyperplaneEquation[1] == 0 or unbiasedStoryEquation[1] == 0:
         print("The y axis parameter of the hyperplane equals to 0. Failed to plot.")
@@ -322,9 +309,11 @@ def plotDefAdvHyperplane(pointList, defenderHyperplaneEquation, adversaryHyperpl
 
 def plotHyperplaneList(pointList, hyperplaneList, unbiasedStoryHyperplane, plotOutputDirectory, title, plotFileName):
     """Attension: Only works in two dimension..."""
-    if not pointList:
+    if not len(pointList) == 0:
         if len(pointList[0]) != 2:
             return
+    else:
+        return
 
     fig = plt.figure()
     plt.scatter(*zip(*pointList))
