@@ -113,8 +113,7 @@ def movePoints(defenderHyperplane, adversaryHyperplane, inputPointList, oringina
         If succeed, return True, finalMovedPointList, defenderMaximumPointNumber, adveraryMaximumPointNumber
         If failed, return False, [empty list], defenderMaximumPointNumber, adveraryMaximumPointNumber
     """
-    movedDefenderPointsList = []
-    finalMovedPointList = []
+    movedDefenderPointsList = np.empty((len(inputPointList), len(inputPointList[0])))
 
     # Move points to benefits defender.
     for i in range(len(inputPointList)):
@@ -131,20 +130,19 @@ def movePoints(defenderHyperplane, adversaryHyperplane, inputPointList, oringina
 
             lowerBoundonDistance = (ci - beta)/ gamma
 
-            movedPoint = [x + y for x, y in
-                          zip(inputPointList[i], [lowerBoundonDistance * z for z in getOrthogonalUnitVector(
-                              defenderHyperplane)])]
+            movedPoint = inputPointList[i] + lowerBoundonDistance * getOrthogonalUnitVector(defenderHyperplane)
 
             distanceToOriginalPoints = twoPointsDistance(oringinalPointList[i], movedPoint)
 
             if distanceToOriginalPoints <= longestMovingDistance and singlePointSubscribeOfConvertedHyperplane(
                     defenderHyperplane, movedPoint, ci) == 1:
-                movedDefenderPointsList.append(movedPoint)
+                movedDefenderPointsList[i] = movedPoint
             else:
-                movedDefenderPointsList.append(inputPointList[i]) # Not moving this point because the total moving
+                movedDefenderPointsList[i] = inputPointList[i]
+                # Not moving this point because the total moving
                 # distance is too large or cannot change the subscription status.
         else:
-            movedDefenderPointsList.append(inputPointList[i]) # This point is already subscribed.
+            movedDefenderPointsList[i] = inputPointList[i] # This point is already subscribed.
 
 
 

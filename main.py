@@ -104,7 +104,6 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         # list is
         # matched hyperplane pairs.
 
-
         print("Finished converting hyperplanes.  The size of the convert hyperplanelist is:" + str(len(
             originalConvertedHyperplaneMatchList)) + ".")
 
@@ -119,9 +118,9 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
             return False, functionEndTime - functionStartTime, 0
         print("Finished generating converted hyperplane with utilities.")
 
-        if whileCounter > 1 and defenderHyperplane != Hyperplane([], []):
+        if whileCounter > 1 and defenderHyperplane != Hyperplane([], []) and adversaryHyperplane != Hyperplane([], []):
             hyperplaneList.append(defenderHyperplane)
-
+            hyperplaneList.append(adversaryHyperplane)
 
         # Now plot the original and converted hyperplane.
         plotOriginalHyperplaneList = []
