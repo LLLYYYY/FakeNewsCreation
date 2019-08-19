@@ -117,7 +117,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
 
         if whileCounter > 1 and defenderHyperplane != Hyperplane([], []) and adversaryHyperplane != Hyperplane([], []):
             hyperplaneList.append(defenderHyperplane)
-            hyperplaneList.append(adversaryHyperplane)
+            # hyperplaneList.append(adversaryHyperplane)
 
         # Now plot the original and converted hyperplane.
         plotOriginalHyperplaneList = []
@@ -166,7 +166,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
 
         #Find the best strategy for adversary.
         for hyperplane in hyperplaneList:
-            if hyperplane.adversaryUtility > adversaryHyperplane.adversaryUtility:
+            if hyperplane.adversaryUtility >= adversaryHyperplane.adversaryUtility:
                 adversaryHyperplane = hyperplane
 
 
@@ -190,6 +190,13 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 isFound = False
                 break
 
+            #For Debug purpose. Make sure that the new l2norm will not be larger than the previous defender
+            # hyperplane's l2norm.
+            if np.array_equal(hyperplaneList[i].hyperPlaneEquation, defenderHyperplane.hyperPlaneEquation):
+                print("The defender hyperplane and previous defender hyperplane matched. List number: " + str(i))
+                isFound = False
+                break
+
             isSucceed, movedPointList, defenderMaximumSubscription = movePoints(hyperplaneList[i],
                                                                                                      adversaryHyperplane,
 
@@ -207,7 +214,9 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                 print("Found defender hyperplane " + str(i) + " that can do better than adversary hyperplane. \n" +
                       "The Defender maximum point count is " + str(defenderMaximumSubscription) + "\n")
 
+                defenderHyperplane.adversaryUtility = defenderMaximumSubscription
                 defenderHyperplane = hyperplaneList[i]
+                adversaryHyperplane = defenderHyperplane
 
                 # # For Debug purpose.
                 #print(hyperplaneList[0].defenderUtility,  hyperplaneList[1].defenderUtility, hyperplaneList[2].defenderUtility)
@@ -414,7 +423,6 @@ for pointNum in consumerTotalPointNumberList:
         if isSucceed:
             runtimeList.append(runtime)
             iterationNumberList.append(iteration)
-            #TODO: Fix the ave utility plot.
             aveDefUtilityList = unbalancedListPlus(aveDefUtilityList, defU)
             aveAdvUtilityList = unbalancedListPlus(aveAdvUtilityList, advU)
             iterationCount = unbalancedListPlus(iterationCount, iteration * [1])
@@ -443,12 +451,8 @@ for pointNum in consumerTotalPointNumberList:
     plt.savefig(os.path.join(currOutputDirectory, "Iter_VS_AveAdvU.png"))
     plt.close(fig)
 
-
-print(pointNumRunTimeList)
-print(iterationNumberList)
-
 f = open(os.path.join(outputDirectory, "RuntimeData.txt"), 'aw')
 for i in range(len(consumerTotalPointNumberList)):
     f.write("Point number: " + str(consumerTotalPointNumberList[i]) + ". Runtime: " + str(pointNumRunTimeList[i]) +
-            ". Iteration Number: " + str(iterationNumberList[i]) + ".\n")
+            ". Iteration Number: " + str(iterationCount) + ".\n")
 f.close()
