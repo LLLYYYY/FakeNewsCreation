@@ -110,8 +110,8 @@ def twoPointsDistance (pointA, pointB):
 
 def movePoints(defenderHyperplane, adversaryHyperplane, inputPointList, oringinalPointList, ci):
     """Try to move points so that the defender hyperplane can has more point counts than adversary hyperplane.
-        If succeed, return True, finalMovedPointList, defenderMaximumPointNumber, adveraryMaximumPointNumber
-        If failed, return False, [empty list], defenderMaximumPointNumber, adveraryMaximumPointNumber
+        If succeed, return True, finalMovedPointList, defenderMaximumPointNumber
+        If failed, return False, [empty list], defenderMaximumPointNumber
     """
     movedDefenderPointsList = np.empty((len(inputPointList), len(inputPointList[0])))
 

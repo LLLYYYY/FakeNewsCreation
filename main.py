@@ -21,7 +21,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
     #Already changed to storyVector hyperplane calculation.
 
     functionStartTime = timeit.default_timer()
-    outputDirectory = os.path.join(outputDirectory, str(runCount))
+    outputDirectory = os.path.join(outputDirectory, str(runCount)+"_runs")
     if not os.path.isdir(outputDirectory):
         os.mkdir(outputDirectory)
 
@@ -53,7 +53,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         print("Running dimension " + str(pointDimension)+ " with point number: "+ str(numOfComsumerPoints))
         # print("The Unbiased story vector is " + str(unbiasedStoryHyperplane.hyperPlaneEquation))
 
-        plotOutputDirectory = os.path.join(outputDirectory, str(iter))
+        plotOutputDirectory = os.path.join(outputDirectory, str(iter)+"_iter")
         if not os.path.isdir(plotOutputDirectory):
             os.mkdir(plotOutputDirectory)
 
