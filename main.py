@@ -24,9 +24,6 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
     #Already changed to storyVector hyperplane calculation.
 
     functionStartTime = timeit.default_timer()
-    outputDirectory = os.path.join(outputDirectory, str(pointDimension)+"D"+str(numOfComsumerPoints)+"P")
-    if not os.path.isdir(outputDirectory):
-        os.mkdir(outputDirectory)
     outputDirectory = os.path.join(outputDirectory, str(runCount))
     if not os.path.isdir(outputDirectory):
         os.mkdir(outputDirectory)
@@ -115,7 +112,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         except ValueError as e:
             functionEndTime = timeit.default_timer()
             print("Error getting converted Hyperplane. Error Message: " + str(e))
-            return False, functionEndTime - functionStartTime, 0
+            return False, functionEndTime - functionStartTime, 0, [], []
         print("Finished generating converted hyperplane with utilities.")
 
         if whileCounter > 1 and defenderHyperplane != Hyperplane([], []) and adversaryHyperplane != Hyperplane([], []):
@@ -127,7 +124,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
         plotConvertedHyperplaneList = []
         if len(originalConvertedHyperplaneMatchList) < 3:
             print("Failed to convert enough hyperplane.")
-            return False, 0, 0
+            return False, 0, 0, [], []
         for p in range(3):
             matchedHyperplane = originalConvertedHyperplaneMatchList[p]
             plotOriginalHyperplaneList.append(matchedHyperplane[0])
@@ -269,7 +266,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
     plt.savefig(os.path.join(outputDirectory, "Iter_VS_Adv.png"))
     plt.close(fig)
 
-    return True, (functionEndTime - functionStartTime), iteration+1
+    return True, (functionEndTime - functionStartTime), iteration+1, minimumDefenderUtilityList, adversaryMaximumUtilityList
 
 def plotDefAdvHyperplane(pointList, defenderHyperplaneEquation, adversaryHyperplaneEquation,
                          unbiasedStoryEquation, plotOutputDirectory, title, plotFileName):
@@ -369,6 +366,24 @@ def plotHyperplaneList(pointList, hyperplaneList, unbiasedStoryHyperplane, plotO
 
     return
 
+def unbalancedListPlus(listA, listB):
+    outputList = []
+    if len(listA) == 0:
+        outputList = listB
+    elif len(listB) == 0:
+        outputList = listA
+    elif len(listA) <= len(listB):
+        for i in range(len(listA)):
+            listB[i] += listA[i]
+            outputList = listB
+    elif len(listB) < len(listA):
+        for i in range(len(listB)):
+            listA[i] += listB[i]
+            outputList = listA
+    else:
+        raise Exception("Logic error in unbalancedListPlus.")
+    return outputList
+
 # Run
 dimensionRunTimeList = []
 pointNumRunTimeList = []
@@ -379,19 +394,55 @@ if not os.path.isdir(outputDirectory):
     raise Exception("Output Directory not accessible.")
 
 iterationNumberList = []
+adversaryUtilityList = []
+defenderUtilityList = []
 for pointNum in consumerTotalPointNumberList:
-    # isSucceed = False
+
+    currOutputDirectory = os.path.join(outputDirectory, str(2) + "D" + str(pointNum) + "P")
+    if not os.path.isdir(currOutputDirectory):
+        os.mkdir(currOutputDirectory)
+
     runtimeList = []
-    # while not isSucceed or len(runtimeList) <= 10:
+    aveDefUtilityList = []
+    aveAdvUtilityList = []
+    iterationCount = [] #Used for counting how many times the specific iteration goes through.
     while len(runtimeList) <= maximumRunCountForEachSituation:
-        isSucceed, runtime, iteration = mainAlgorithm(outputDirectory=outputDirectory, pointDimension=2,
-                                                   numOfComsumerPoints
-        =pointNum, numberOfStoryVectors= numberOfStoryVectors, ci=ci,
-                                           runCount=len(runtimeList))
+        isSucceed, runtime, iteration, defU, advU = mainAlgorithm(outputDirectory=currOutputDirectory,
+                                                                  pointDimension=2,
+                                                                  numOfComsumerPoints=pointNum, numberOfStoryVectors= numberOfStoryVectors, ci=ci,
+                                                                  runCount=len(runtimeList))
         if isSucceed:
             runtimeList.append(runtime)
             iterationNumberList.append(iteration)
+            #TODO: Fix the ave utility plot.
+            aveDefUtilityList = unbalancedListPlus(aveDefUtilityList, defU)
+            aveAdvUtilityList = unbalancedListPlus(aveAdvUtilityList, advU)
+            iterationCount = unbalancedListPlus(iterationCount, iteration * [1])
+
     pointNumRunTimeList.append(sum(runtimeList)/len(runtimeList))
+    print(aveAdvUtilityList)
+    print(aveDefUtilityList)
+    print(iterationCount)
+    aveDefUtilityList = [x/y for x,y in zip(aveDefUtilityList, iterationCount)]
+    aveAdvUtilityList = [x/y for x,y in zip(aveAdvUtilityList, iterationCount)]
+
+    fig = plt.figure()
+    print(len(aveDefUtilityList))
+    plt.plot([iter + 1 for iter in range(len(iterationCount))], aveDefUtilityList)
+    plt.xlabel("Iteration")
+    plt.ylabel("The average defender utilities in each iterations")
+    plt.title("Iter_VS_AveDefU")
+    plt.savefig(os.path.join(currOutputDirectory, "Iter_VS_AveDefU.png"))
+    plt.close(fig)
+
+    fig = plt.figure()
+    plt.plot([iter + 1 for iter in range(len(iterationCount))], aveAdvUtilityList)
+    plt.xlabel("Iteration")
+    plt.ylabel("The average adversary utilities in each iterations")
+    plt.title("Iter_VS_AveAdvU")
+    plt.savefig(os.path.join(currOutputDirectory, "Iter_VS_AveAdvU.png"))
+    plt.close(fig)
+
 
 print(pointNumRunTimeList)
 print(iterationNumberList)
@@ -401,15 +452,3 @@ for i in range(len(consumerTotalPointNumberList)):
     f.write("Point number: " + str(consumerTotalPointNumberList[i]) + ". Runtime: " + str(pointNumRunTimeList[i]) +
             ". Iteration Number: " + str(iterationNumberList[i]) + ".\n")
 f.close()
-# fig = plt.figure()
-# plt.plot( dimensionList , dimensionRunTimeList)
-# plt.savefig(os.path.join(outputDirectory, "Dimension_VS_Runtime.png"))
-# plt.close(fig)
-#
-# fig = plt.figure()
-# plt.plot( pointNumList , pointNumRunTimeList)
-# plt.savefig(os.path.join(outputDirectory, "PointNum_VS_Runtime.png"))
-# plt.close(fig)
-
-# isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=2, numOfComsumerPoints= 20,
-                                   # numberOfStoryVectors=50)
