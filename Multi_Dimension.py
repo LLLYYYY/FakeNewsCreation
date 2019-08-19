@@ -160,7 +160,8 @@ def movePoints(defenderHyperplane, adversaryHyperplane, inputPointList, oringina
     if np.array_equal(finalMovedPointList, inputPointList) or np.array_equal(finalMovedPointList, oringinalPointList):
         return False, [], defenderTotalSubscriptionNumber
 
-    if defenderTotalSubscriptionNumber >= adversaryTotalSubscriptionNumber and defenderTotalSubscriptionNumber > 0:
+    if defenderTotalSubscriptionNumber >= adversaryTotalSubscriptionNumber and defenderTotalSubscriptionNumber > 0 \
+            and defenderTotalSubscriptionNumber > adversaryHyperplane.adversaryUtility:
         return True, finalMovedPointList, defenderTotalSubscriptionNumber
     elif defenderTotalSubscriptionNumber == 0:
         raise Exception("The defender total subscription number equals to 0. Bug!")
