@@ -82,7 +82,7 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
 
         hyperplaneList = getOriginalHyperplaneListWithUtilities(hyperplaneList, consumerPointList,
                                                                 unbiasedStoryHyperplane.hyperPlaneEquation)
-
+        originalHyperplaneList = hyperplaneList # Use for data storage.
         print("Finished Getting Lines with Utilities")
 
         cplexProcessPool = Pool(processes=program_process_number)
@@ -138,6 +138,23 @@ def mainAlgorithm(outputDirectory, pointDimension, numOfComsumerPoints,numberOfS
                            plotOutputDirectory, "converted hyperplane with consumer points", "figure2.png")
 
         print("Finished printing the original and converted hyperplane charts.")
+
+        # Save running data to csv files.
+        # f = open(os.path.join(plotOutputDirectory, "consumerPlotList.csv"), 'wb')
+        np.savetxt(os.path.join(plotOutputDirectory, "consumerPlotList.csv"), consumerPointList, delimiter=',')
+        np.savetxt(os.path.join(plotOutputDirectory, "storyVectorList.csv"), storyVectorList, delimiter=',')
+
+        f = open(os.path.join(plotOutputDirectory, "originalHyperplaneList.csv"), 'wb')
+        for originalHyperplane in originalHyperplaneList:
+            hyperplaneEquation = np.array([originalHyperplane.hyperPlaneEquation])
+            np.savetxt(f, hyperplaneEquation, delimiter=',')
+        f.close()
+
+        f = open(os.path.join(plotOutputDirectory, "convertedHyperplaneList.csv"), 'wb')
+        for convertedHyperplane in hyperplaneList:
+            hyperplaneEquation = np.array([convertedHyperplane.hyperPlaneEquation])
+            np.savetxt(f, hyperplaneEquation, delimiter=',')
+        f.close()
 
         # # After regenerating the hyperplane. Needs to recalculate the L2Norm.
         # getHyperplaneListWithUtilities(hyperplaneList, consumerPointList, unbiasedStoryHyperplane.hyperPlaneEquation,
@@ -361,17 +378,6 @@ outputDirectory = sys.argv[1]
 if not os.path.isdir(outputDirectory):
     raise Exception("Output Directory not accessible.")
 
-# for dimemsion in dimensionList:
-#     # isSucceed = False
-#     runtimeList = []
-#     # while not isSucceed or len(runtimeList) <= 3:
-#     while len(runtimeList) <= 3:
-#         isSucceed, runtime = mainAlgorithm(outputDirectory= outputDirectory, pointDimension=dimemsion,
-#                                            numOfComsumerPoints=20, numberOfStoryVectors=50, ci = ci, runCount=len(
-#             runtimeList))
-#         # if isSucceed:
-#         runtimeList.append(runtime)
-#     dimensionRunTimeList.append(sum(runtimeList)/len(runtimeList))
 iterationNumberList = []
 for pointNum in consumerTotalPointNumberList:
     # isSucceed = False
@@ -389,6 +395,12 @@ for pointNum in consumerTotalPointNumberList:
 
 print(pointNumRunTimeList)
 print(iterationNumberList)
+
+f = open(os.path.join(outputDirectory, "RuntimeData.txt"), 'aw')
+for i in range(len(consumerTotalPointNumberList)):
+    f.write("Point number: " + str(consumerTotalPointNumberList[i]) + ". Runtime: " + str(pointNumRunTimeList[i]) +
+            ". Iteration Number: " + str(iterationNumberList[i]) + ".\n")
+f.close()
 # fig = plt.figure()
 # plt.plot( dimensionList , dimensionRunTimeList)
 # plt.savefig(os.path.join(outputDirectory, "Dimension_VS_Runtime.png"))
